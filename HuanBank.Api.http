@@ -1,0 +1,11 @@
+@HuanBankApi_HostAddress = http://localhost:5079
+
+POST {{HuanBankApi_HostAddress}}/Login/
+Content-Type: application/json
+
+{
+  "Stk": "doquanghuan1",
+  "Mk": "2"
+}
+
+###
