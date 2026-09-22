@@ -1,4 +1,5 @@
 using System;
+namespace HuanBank.Api.Entities;
 
 public class AccountInfo
 {

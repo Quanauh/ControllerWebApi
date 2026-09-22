@@ -1,6 +1,9 @@
 using Dapper;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
+using HuanBank.Api.Entities;
+namespace HuanBank.Api.DAO;
+
 class FakeAccountDAO: IAccountDAO
 
 {

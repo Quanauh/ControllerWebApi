@@ -4,7 +4,8 @@ using System.Data;
 using System.Linq;
 using Dapper;
 using Oracle.ManagedDataAccess.Client;
-
+using HuanBank.Api.Entities;
+namespace HuanBank.Api.DAO;
 class AccountDAO : IAccountDAO
 {
     // Kiem tra ton tai

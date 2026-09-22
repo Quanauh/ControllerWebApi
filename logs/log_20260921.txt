@@ -1,0 +1,57 @@
+2026-09-21 09:23:26.614 +07:00 [WRN] So tai khoan doquanghuan khong ton tai
+2026-09-21 09:23:57.302 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-09-21 09:24:06.481 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:24:59.115 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 09:37:26.254 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:37:57.762 +07:00 [INF] Nap Tien - So tai khoan doquanghuan nap tien thanh cong, so tien 1000000
+2026-09-21 09:37:57.765 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-09-21 09:38:10.206 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 09:38:15.992 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 09:40:59.721 +07:00 [ERR] An unhandled exception has occurred while executing the request.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at AccountController.get_CurrentStk() in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AccountController.cs:line 13
+   at AccountController.GetAccountInfo() in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AccountController.cs:line 16
+   at lambda_method2(Closure, Object, Object[])
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.SyncActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeNextActionFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-09-21 09:41:16.377 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:41:30.288 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 09:41:40.373 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-09-21 09:41:48.228 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-09-21 09:42:25.747 +07:00 [INF] Nap Tien - So tai khoan doquanghuan nap tien thanh cong, so tien 150000
+2026-09-21 09:42:25.751 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-09-21 09:42:58.020 +07:00 [WRN] Rut tien - So tai khoan doquanghuan rut tien thanh cong
+2026-09-21 09:43:09.563 +07:00 [WRN] Rut tien - So tai khoan doquanghuan rut tien thanh cong
+2026-09-21 09:47:08.819 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:47:18.769 +07:00 [WRN] So tai khoan doquanghuan2 khong ton tai
+2026-09-21 09:47:22.959 +07:00 [INF] Dang Nhap - stk doquanghuan1 Dang nhap thanh cong
+2026-09-21 09:47:57.353 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:48:27.742 +07:00 [INF] Rut tien - So tai khoan doquanghuan rut tien thanh cong
+2026-09-21 09:51:06.845 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 09:51:32.400 +07:00 [INF] Rut tien - So tai khoan doquanghuan rut tien thanh cong
+2026-09-21 10:03:28.091 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-09-21 10:10:19.281 +07:00 [INF] Dang Nhap - stk doquanghuan1 Dang nhap thanh cong
+2026-09-21 10:10:34.361 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-09-21 10:10:40.592 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 13:56:38.905 +07:00 [INF] Dang Nhap - stk doquanghuan1 Dang nhap thanh cong
+2026-09-21 14:09:11.058 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-21 14:11:40.547 +07:00 [INF] Dang Nhap - stk doquanghuan1 Dang nhap thanh cong
+2026-09-21 14:12:44.978 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan1 thanh cong
+2026-09-21 14:12:55.073 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 14:26:48.749 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-09-21 14:26:49.683 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong

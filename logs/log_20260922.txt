@@ -1,0 +1,88 @@
+2026-09-22 09:48:27.185 +07:00 [INF] Dang Nhap - stk doquanghuan Dang nhap thanh cong
+2026-09-22 10:04:45.857 +07:00 [INF] Tao Tai Khoan - Tao tai khoan doquanghuan2112 thanh cong
+2026-09-22 10:06:21.901 +07:00 [WRN] So tai khoan Doquanghuan2112 khong ton tai
+2026-09-22 10:06:27.404 +07:00 [WRN] So tai khoan Doquanghuan2112 khong ton tai
+2026-09-22 10:06:34.271 +07:00 [INF] Dang Nhap - stk doquanghuan2112 Dang nhap thanh cong
+2026-09-22 10:52:21.719 +07:00 [INF] Dang Nhap - stk doquanghuan2112 Dang nhap thanh cong
+2026-09-22 10:52:38.024 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:38.027 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:40.472 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:40.472 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:40.608 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:40.609 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:40.753 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:40.753 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:40.906 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:40.906 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.048 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.048 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.328 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.328 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.487 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.487 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.631 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.631 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.814 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.814 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:52:41.993 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 1500000
+2026-09-22 10:52:41.993 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 10:53:44.554 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:53:46.943 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:53:47.382 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:53:47.752 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:54:39.116 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:54:41.184 +07:00 [INF] Rut tien - So tai khoan doquanghuan2112 rut tien thanh cong
+2026-09-22 10:59:12.401 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien thanh cong cho so tai khoan doquanghuan, So tien 150000
+2026-09-22 11:04:28.098 +07:00 [WRN] Chuyen tien - So tai khoan doquanghua1n khong ton tai,chuyen tien that bai
+2026-09-22 13:53:31.975 +07:00 [ERR] An unhandled exception has occurred while executing the request.
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at HuanBank.Api.Controller.AccountController.get_CurrentStk() in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AccountController.cs:line 16
+   at HuanBank.Api.Controller.AccountController.GetAccountInfo() in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AccountController.cs:line 19
+   at lambda_method6(Closure, Object, Object[])
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.SyncActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeActionMethodAsync()
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeNextActionFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-09-22 14:01:25.235 +07:00 [INF] Dang Nhap - stk doquanghuan2112 Dang nhap thanh cong
+2026-09-22 14:01:41.455 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan2112 thanh cong
+2026-09-22 14:01:44.346 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 14:01:48.509 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan2112 thanh cong
+2026-09-22 15:59:50.006 +07:00 [INF] Dang Nhap - stk doquanghuan2112 Dang nhap thanh cong
+2026-09-22 15:59:59.407 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan2112 thanh cong
+2026-09-22 16:00:10.764 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:10.765 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:13.590 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:13.590 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:13.662 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:13.663 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:13.874 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:13.874 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:14.024 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:14.024 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:14.166 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:14.166 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:14.334 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:14.334 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:14.449 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:00:14.449 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong
+2026-09-22 16:00:43.316 +07:00 [WRN] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien that bai,so tien khong hop le :0
+2026-09-22 16:00:44.643 +07:00 [WRN] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien that bai,so tien khong hop le :0
+2026-09-22 16:00:44.898 +07:00 [WRN] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien that bai,so tien khong hop le :0
+2026-09-22 16:01:41.486 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien thanh cong cho so tai khoan doquanghuan20105, So tien 210000
+2026-09-22 16:01:41.635 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien thanh cong cho so tai khoan doquanghuan20105, So tien 210000
+2026-09-22 16:01:41.769 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan2112 chuyen tien thanh cong cho so tai khoan doquanghuan20105, So tien 210000
+2026-09-22 16:37:48.826 +07:00 [INF] Nap Tien - So tai khoan doquanghuan2112 nap tien thanh cong, so tien 15000000
+2026-09-22 16:37:48.826 +07:00 [INF] Xem so du - Xem so du doquanghuan2112 thanh cong

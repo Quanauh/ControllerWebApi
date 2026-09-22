@@ -1,5 +1,5 @@
 using System;
-
+namespace HuanBank.Api.Entities;
 public class TransactionHistory
 {
     public string AccountNumber { get; set; } = "";

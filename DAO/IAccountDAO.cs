@@ -1,3 +1,5 @@
+using HuanBank.Api.Entities;
+namespace HuanBank.Api.DAO;
 public interface IAccountDAO
 {
     bool Exists(string stk);
