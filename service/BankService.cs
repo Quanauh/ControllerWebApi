@@ -1,254 +1,200 @@
 using System;
 using System.Collections.Generic;
-using Oracle.ManagedDataAccess.Client;
-using Serilog;
 using Microsoft.Extensions.Logging;
 using HuanBank.Api.DAO;
-using HuanBank.Api.Entities;
-namespace HuanBank.Api.Services;
-public enum TransactionResult
-{
-    Success,
-    //tk tồn tại
-    AccountAlreadyExists,
-    //ko tìm thấy tk
-    AccountNotFound,
-    //sai mk
-    IncorrectPassword,
-    //số tiền ko hợp lệ
-    InvalidAmount,
-    //số dư không đủ
-    InsufficientBalance,
-    //ko chuyển tiền cho chính mình
-    CannotTransferToSelf,
-    //sđt đã tồn tại
-    PhoneAlreadyExists,
-    //email đã tồn tại
-    EmailAlreadyExists,
-    //Lỗi hệ thống
-    SystemError,
-    //Ngày sinh không hợp lệ
-    InvalidDate,
-    // Thông tin trống
-    IsNull
-}
+using HuanBank.Api.DAO.Models;
+using HuanBank.Api.Validators;
+using HuanBank.Api.Services.Models;
+using HuanBank.Api.Result;
 
-public class BankService:IBankService
+namespace HuanBank.Api.Services;
+
+public class BankService : IBankService
 {
     private readonly IAccountDAO _acd;
     private readonly ILogger<BankService> _logger;
+    private readonly IAccountValidator _validator;
 
-    public BankService(IAccountDAO acd, ILogger<BankService> logger)
+    public BankService(IAccountDAO acd, ILogger<BankService> logger, IAccountValidator validator)
     {
-        this._acd = acd;
-        this._logger = logger;
-    }
-    public bool AccountExists(string stk)
-    {
-        return _acd.Exists(stk);
+        _acd = acd;
+        _logger = logger;
+        _validator = validator;
     }
 
-    public TransactionResult CreateAccount(string ten, string sdt, string email, string ngaysinh, string diachi, string stk, string mk)
+    public bool AccountExists(string AccountNumber)
     {
-        if (string.IsNullOrWhiteSpace(ten) || string.IsNullOrWhiteSpace(stk) || string.IsNullOrWhiteSpace(mk))
-        {
-            _logger.LogWarning("Dang ky - Thong tin khong duoc de trong");
-            return TransactionResult.IsNull;
-        }
-        try
-        {
-            if (_acd.Exists(stk)){ 
-                _logger.LogWarning("Dang Ki - Sotk {stk} da ton tai",stk);
-                return TransactionResult.AccountAlreadyExists;
-            }
-            else
-            {
-                _acd.CreateAccount(ten, sdt, email, ngaysinh, diachi, stk, mk);
-                _logger.LogInformation("Tao Tai Khoan - Tao tai khoan {stk} thanh cong",stk);
-                return TransactionResult.Success;
-            }
-        }
-        catch (OracleException ex)
-        {
-            if (ex.Number > 0)
-            {
-                if (ex.Message.Contains("UQ_KHACHHANG_SDT")){
-                    return TransactionResult.PhoneAlreadyExists;
-                }
-                if (ex.Message.Contains("UQ_KHACHHANG_EMAIL")){
-                    _logger.LogWarning("Tao tai khoan - Email {email} da ton tai",email);
-                    return TransactionResult.EmailAlreadyExists;
-                }
-
-                if (ex.Message.Contains("PK_TAI_KHOAN")){
-                    _logger.LogWarning("Tao tai khoan - So tai khoan {stk} da ton tai",stk);
-                    return TransactionResult.AccountAlreadyExists;
-                }
-                if (ex.Number == 1843 || ex.Number == 1847 || ex.Number == 1861)
-                {
-                    _logger.LogWarning("Tao tai khoan - Ngay sinh {ngaysinh} khong hop le", ngaysinh );
-                     return TransactionResult.InvalidDate;
-            }
-            }
-             _logger.LogError(ex,"Tao tai khoan - Co loi xay ra");
-            return TransactionResult.SystemError;
-        }
+        return _acd.Exists(AccountNumber);
     }
-    //Đăng nhập
-    public TransactionResult Login(string stk, string mk)
+
+    // Dang ky
+    public TransactionResult CreateAccount(RegisterAccountCommand command)
     {
-        try{
-        if (!AccountExists(stk)){
-            _logger.LogWarning("So tai khoan {Stk} khong ton tai", stk);
+        var validation = _validator.ValidateRegistration(command);
+        if (validation != TransactionResult.Success)
+        {
+            _logger.LogWarning("Dang ky - Validate that bai: {Result}", validation);
+            return validation;
+        }
+
+        if (_acd.Exists(command.AccountNumber))
+        {
+            _logger.LogWarning("Dang Ki - Sotk {AccountNumber} da ton tai", command.AccountNumber);
+            return TransactionResult.AccountAlreadyExists;
+        }
+
+        _acd.CreateAccount(new CreateAccountData
+        {
+            Name = command.Name,
+            Phone = command.Phone,
+            Email = command.Email,
+            DateOfBirth = command.DateOfBirth,
+            Address = command.Address,
+            AccountNumber = command.AccountNumber,
+            Password = command.Password
+        });
+        _logger.LogInformation("Tao Tai Khoan - Tao tai khoan {AccountNumber} thanh cong", command.AccountNumber);
+        return TransactionResult.Success;
+    }
+
+    // Dang nhap
+    public TransactionResult Login(string AccountNumber, string Password)
+    {
+        if (!AccountExists(AccountNumber))
+        {
+            _logger.LogWarning("So tai khoan {AccountNumber} khong ton tai", AccountNumber);
             return TransactionResult.AccountNotFound;
         }
 
-        if (!_acd.checkPassWord(stk, mk)){
-            _logger.LogWarning("Dang Nhap - So tai khoan {stk} nhap khong dung mat khau",stk);
+        if (!_acd.checkPassWord(AccountNumber, Password))
+        {
+            _logger.LogWarning("Dang Nhap - So tai khoan {AccountNumber} nhap khong dung mat khau", AccountNumber);
             return TransactionResult.IncorrectPassword;
         }
-        _logger.LogInformation("Dang Nhap - stk {stk} Dang nhap thanh cong",stk);
+
+        _logger.LogInformation("Dang Nhap - Stk {AccountNumber} dang nhap thanh cong", AccountNumber);
         return TransactionResult.Success;
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex,"Dang Nhap - Loi he thong khi STK {stk} dang nhap",stk);
-            return TransactionResult.SystemError;
-        }
-    }
-    // Nạp tiền
-    public TransactionResult Deposit(string stk, decimal a)
-    {
-        try{
-        if (!AccountExists(stk)){
-            _logger.LogWarning("Nap tien - So tai khoan {stk} khong ton tai, nap tien that bai ",stk);
-            return TransactionResult.AccountNotFound;
-        }
-        if (a <= 0){
-            _logger.LogWarning("Nap tien - So tai khoan {stk} nap tien that bai, so tien {a} khong hop le",stk,a);
-            return TransactionResult.InvalidAmount;
-        }
-        _acd.Deposit(stk, a);
-        _logger.LogInformation("Nap Tien - So tai khoan {stk} nap tien thanh cong, so tien {a}",stk,a);
-        return TransactionResult.Success;
-        }
-        catch(Exception ex)
-        {
-           _logger.LogError(ex,"Nap tien - Loi he thong khi STK {stk} nap tien",stk);
-            return TransactionResult.SystemError;
-        }
-    }
-    // Rút tiền
-    public TransactionResult Withdraw(string stk, decimal a)
-    {
-        try{
-        if (!AccountExists(stk)){
-            _logger.LogWarning("Rut tien - So tai khoan {stk} khong ton tai,rut tien that bai",stk);
-            return TransactionResult.AccountNotFound;
-        }
-        if (a <= 0)
-            {
-            _logger.LogWarning("Rut tien - So tai khoan {stk} rut tien that bai, so tien {a} khong hop le",stk,a);
-            return TransactionResult.InvalidAmount;
-            }
-        if (a > _acd.GetBalance(stk))
-            {
-            _logger.LogWarning("Rut tien - So tai khoan {stk} rut tien that bai, so du khong du {a}",stk,a);
-            return TransactionResult.InsufficientBalance;
-            }
-        _acd.Withdraw(stk, a);
-        _logger.LogInformation("Rut tien - So tai khoan {stk} rut tien thanh cong",stk);
-        return TransactionResult.Success;
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex,"Rut tien - Loi he thong khi STK {stk} rut tien", stk);
-            return TransactionResult.SystemError;
-        }
-    }
-    // Chuyển tiền
-    public TransactionResult TransferMoney(string stk1, string stk2, decimal a)
-    {
-        try{
-        if (stk1 == stk2)
-            {
-            _logger.LogWarning("Chuyen tien - So tai khoan {stk1} khong the chuyen cho chinh minh,chuyen tien that bai",stk1);
-            return TransactionResult.CannotTransferToSelf;
-            }
-        if (!AccountExists(stk2))
-            {
-            _logger.LogWarning("Chuyen tien - So tai khoan {stk2} khong ton tai,chuyen tien that bai",stk2);
-            return TransactionResult.AccountNotFound;
-            }
-        if (a <= 0)
-            {
-            _logger.LogWarning("Chuyen tien - So tai khoan {stk1} chuyen tien that bai,so tien khong hop le :{a}",stk1,a);
-            return TransactionResult.InvalidAmount;
-            }
-        if (a > _acd.GetBalance(stk1)){
-            _logger.LogWarning("Chuyen tien - So tai khoan {stk1} khong du so du {a},chuyen tien that bai",stk1,a);
-            return TransactionResult.InsufficientBalance;
-        }
-        _acd.TransferMoney(stk1, stk2, a);
-        _logger.LogInformation("Chuyen tien - So tai khoan {stk1} chuyen tien thanh cong cho so tai khoan {stk2}, So tien {a}",stk1,stk2,a);
-        return TransactionResult.Success;
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex,"Chuyen Tien - Loi he thong khi STK {stk1} chuyen tien cho {stk2}", stk1,stk2);
-            return TransactionResult.SystemError;
-        }
     }
 
-    public decimal GetBalance(string stk)
+    // Nap tien
+    public TransactionResult Deposit(string AccountNumber, decimal a)
     {
-        try{
-        _logger.LogInformation("Xem so du - Xem so du {stk} thanh cong",stk);
-        return _acd.GetBalance(stk);
-        }
-        catch(Exception ex)
+        if (!AccountExists(AccountNumber))
         {
-            _logger.LogError(ex,"Xem So du - Loi he thong khi lay so du {stk}",stk);
-            return -1;
+            _logger.LogWarning("Nap tien - So tai khoan {AccountNumber} khong ton tai, nap tien that bai", AccountNumber);
+            return TransactionResult.AccountNotFound;
         }
+
+        var validation = _validator.ValidateAmount(a);
+        if (validation != TransactionResult.Success)
+        {
+            _logger.LogWarning("Nap tien - So tai khoan {AccountNumber} nap tien that bai, so tien {Amount} khong hop le", AccountNumber, a);
+            return validation;
+        }
+
+        _acd.Deposit(AccountNumber, a);
+        _logger.LogInformation("Nap Tien - So tai khoan {AccountNumber} nap tien thanh cong, so tien {Amount}", AccountNumber, a);
+        return TransactionResult.Success;
     }
 
-    public AccountInfo? GetAccountInfor(string stk)
+    // Rut tien
+    public TransactionResult Withdraw(string AccountNumber, decimal a)
     {
-        try{
-        _logger.LogInformation("Xem thong tin - Xem thong tin {stk} thanh cong",stk);
-        return _acd.GetAccountInfor(stk);
-        }
-        catch(Exception ex)
+        if (!AccountExists(AccountNumber))
         {
-            _logger.LogError(ex,"Lay thong tin - Loi he thong khi lay thong tin {stk}",stk);
+            _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} khong ton tai, rut tien that bai", AccountNumber);
+            return TransactionResult.AccountNotFound;
+        }
+
+        var validation = _validator.ValidateWithdraw(a, _acd.GetBalance(AccountNumber));
+        if (validation != TransactionResult.Success)
+        {
+            _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} rut tien that bai, ket qua validate: {Result}", AccountNumber, validation);
+            return validation;
+        }
+
+        _acd.Withdraw(AccountNumber, a);
+        _logger.LogInformation("Rut tien - So tai khoan {AccountNumber} rut tien thanh cong", AccountNumber);
+        return TransactionResult.Success;
+    }
+
+    // Chuyen tien
+    public TransactionResult TransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
+    {
+        if (!AccountExists(AccountNumber2))
+        {
+            _logger.LogWarning("Chuyen tien - So tai khoan {AccountNumber2} khong ton tai, chuyen tien that bai", AccountNumber2);
+            return TransactionResult.AccountNotFound;
+        }
+
+        var validation = _validator.ValidateTransfer(AccountNumber1, AccountNumber2, a, _acd.GetBalance(AccountNumber1));
+        if (validation != TransactionResult.Success)
+        {
+            _logger.LogWarning("Chuyen tien - So tai khoan {AccountNumber1} chuyen tien that bai, ket qua validate: {Result}", AccountNumber1, validation);
+            return validation;
+        }
+
+        _acd.TransferMoney(AccountNumber1, AccountNumber2, a);
+        _logger.LogInformation("Chuyen tien - So tai khoan {AccountNumber1} chuyen tien thanh cong cho so tai khoan {AccountNumber2}, So tien {Amount}", AccountNumber1, AccountNumber2, a);
+        return TransactionResult.Success;
+    }
+
+    public decimal GetBalance(string AccountNumber)
+    {
+        decimal balance = _acd.GetBalance(AccountNumber);
+        _logger.LogInformation("Xem so du - Xem so du {AccountNumber} thanh cong", AccountNumber);
+        return balance;
+    }
+
+    public AccountDetails? GetAccountInfor(string AccountNumber)
+    {
+        AccountRecord? accountInfo = _acd.GetAccountInfor(AccountNumber);
+        _logger.LogInformation("Xem thong tin - Xem thong tin {AccountNumber} thanh cong", AccountNumber);
+        if (accountInfo == null)
+        {
             return null;
         }
+
+        return new AccountDetails
+        {
+            AccountNumber = accountInfo.AccountNumber,
+            FullName = accountInfo.FullName,
+            Phone = accountInfo.Phone,
+            Email = accountInfo.Email,
+            DateOfBirth = accountInfo.DateOfBirth,
+            Address = accountInfo.Address,
+            Balance = accountInfo.Balance
+        };
     }
 
-    public List<TransactionHistory> GetTransactionHistory(string stk)
-{
-    try
+    public List<TransactionHistoryItem> GetTransactionHistory(string AccountNumber)
     {
-        _logger.LogInformation("Xem lich su - Xem lich su giao dich {Stk} thanh cong", stk);
-        List<TransactionHistory> ds = _acd.GetTransactionHistory(stk);
-        foreach (TransactionHistory gd in ds)
+        List<TransactionHistoryRecord> ds = _acd.GetTransactionHistory(AccountNumber);
+        List<TransactionHistoryItem> result = new();
+
+        foreach (TransactionHistoryRecord gd in ds)
         {
-            gd.Direction = gd.TransactionType switch
+            result.Add(new TransactionHistoryItem
             {
-                "TRANSFER_OUT" => "Chuyen di",
-                "TRANSFER_IN" => "Nhan ve",
-                "DEPOSIT" => "Nap tien",
-                "WITHDRAW" => "Rut tien",
-                _ => gd.TransactionType
-            };
+                AccountNumber = gd.AccountNumber,
+                CounterAccount = gd.CounterAccount,
+                TransactionType = gd.TransactionType,
+                Amount = gd.Amount,
+                BalanceBefore = gd.BalanceBefore,
+                BalanceAfter = gd.BalanceAfter,
+                TransactionDate = gd.TransactionDate,
+                Direction = gd.TransactionType switch
+                {
+                    "TRANSFER_OUT" => "Chuyen di",
+                    "TRANSFER_IN" => "Nhan ve",
+                    "DEPOSIT" => "Nap tien",
+                    "WITHDRAW" => "Rut tien",
+                    _ => gd.TransactionType
+                }
+            });
         }
-        return ds;
+
+        _logger.LogInformation("Xem lich su - Xem lich su giao dich {AccountNumber} thanh cong", AccountNumber);
+        return result;
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Lay lich su giao dich - Loi he thong khi lay lich su giao dich {Stk}", stk);
-        return new List<TransactionHistory>();
-    }
-}
 }

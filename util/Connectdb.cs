@@ -1,4 +1,5 @@
 using Oracle.ManagedDataAccess.Client;
+namespace HuanBank.Api.Util;
 using Dapper;
 class Database
 {

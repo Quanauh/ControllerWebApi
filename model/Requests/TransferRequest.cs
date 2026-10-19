@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-namespace HuanBank.Api.Request;
-public class TranformerRequest
+namespace HuanBank.Api.Model.Request;
+public class TransferRequest
 {
     [Required]
     public required string CounterAccount{get;set;}

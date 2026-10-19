@@ -1,0 +1,45 @@
+2026-10-19 14:03:50.679 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-19 14:03:50.840 +07:00 [ERR] Dang nhap - Loi he thong khi STK doquanghuan dang nhap
+System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'HS256', the key size must be greater than: '256' bits, key has '144' bits. (Parameter 'keyBytes')
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.ValidateKeySize(Byte[] keyBytes, String algorithm, Int32 expectedNumberOfBytes)
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.CreateKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.CreateKeyedHashAlgorithm()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.CreateInstance()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.Allocate()
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.GetKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.Sign(Byte[] input)
+   at Microsoft.IdentityModel.JsonWebTokens.JwtTokenUtilities.CreateEncodedSignature(String input, SigningCredentials signingCredentials)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.WriteToken(SecurityToken token)
+   at HuanBank.Api.Util.TokenService.GenerateToken(String stk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\util\TokenService.cs:line 33
+   at HuanBank.Api.Controller.AuthController.Login(LoginRequest req) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AuthController.cs:line 33
+2026-10-19 14:05:13.979 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-19 14:05:14.120 +07:00 [ERR] Dang nhap - Loi he thong khi STK doquanghuan dang nhap
+System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'HS256', the key size must be greater than: '256' bits, key has '144' bits. (Parameter 'keyBytes')
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.ValidateKeySize(Byte[] keyBytes, String algorithm, Int32 expectedNumberOfBytes)
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.CreateKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.CreateKeyedHashAlgorithm()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.CreateInstance()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.Allocate()
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.GetKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.Sign(Byte[] input)
+   at Microsoft.IdentityModel.JsonWebTokens.JwtTokenUtilities.CreateEncodedSignature(String input, SigningCredentials signingCredentials)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.WriteToken(SecurityToken token)
+   at HuanBank.Api.Util.TokenService.GenerateToken(String stk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\util\TokenService.cs:line 33
+   at HuanBank.Api.Controller.AuthController.Login(LoginRequest req) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AuthController.cs:line 33
+2026-10-19 14:05:16.601 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-19 14:05:16.603 +07:00 [ERR] Dang nhap - Loi he thong khi STK doquanghuan dang nhap
+System.ArgumentOutOfRangeException: IDX10720: Unable to create KeyedHashAlgorithm for algorithm 'HS256', the key size must be greater than: '256' bits, key has '144' bits. (Parameter 'keyBytes')
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.ValidateKeySize(Byte[] keyBytes, String algorithm, Int32 expectedNumberOfBytes)
+   at Microsoft.IdentityModel.Tokens.CryptoProviderFactory.CreateKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.CreateKeyedHashAlgorithm()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.CreateInstance()
+   at Microsoft.IdentityModel.Tokens.DisposableObjectPool`1.Allocate()
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.GetKeyedHashAlgorithm(Byte[] keyBytes, String algorithm)
+   at Microsoft.IdentityModel.Tokens.SymmetricSignatureProvider.Sign(Byte[] input)
+   at Microsoft.IdentityModel.JsonWebTokens.JwtTokenUtilities.CreateEncodedSignature(String input, SigningCredentials signingCredentials)
+   at System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.WriteToken(SecurityToken token)
+   at HuanBank.Api.Util.TokenService.GenerateToken(String stk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\util\TokenService.cs:line 33
+   at HuanBank.Api.Controller.AuthController.Login(LoginRequest req) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\Controllers\AuthController.cs:line 33
+2026-10-19 14:05:32.870 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-19 14:05:43.350 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-10-19 14:05:56.393 +07:00 [WRN] Nap tien - So tai khoan doquanghuan nap tien that bai, so tien -10000 khong hop le

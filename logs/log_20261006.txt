@@ -1,0 +1,39 @@
+2026-10-06 14:19:48.093 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-06 14:20:07.954 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-10-06 14:20:22.423 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-10-06 14:20:27.545 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-10-06 14:43:52.076 +07:00 [ERR] Dang Nhap - Loi he thong khi STK doquanghuan dang nhap
+Oracle.ManagedDataAccess.Client.OracleException (0x80004005): ORA-01008: not all variables bound
+https://docs.oracle.com/error-help/db/ora-01008/
+   at OracleInternal.ServiceObjects.OracleFailoverMgrImpl.OnError(OracleConnection connection, CallHistoryRecord chr, Object mi, Exception ex, Boolean bTopLevelCall, Boolean& bCanRecordNewCall)
+   at Oracle.ManagedDataAccess.Client.OracleCommand.ExecuteScalar()
+   at Dapper.SqlMapper.ExecuteScalarImpl[T](IDbConnection cnn, CommandDefinition& command) in /_/Dapper/SqlMapper.cs:line 3036
+   at Dapper.SqlMapper.ExecuteScalar[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in /_/Dapper/SqlMapper.cs:line 601
+   at HuanBank.Api.DAO.AccountDAO.Exists(String AccountNumber) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\DAO\AccountDAO.cs:line 15
+   at HuanBank.Api.Services.BankService.AccountExists(String stk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\service\BankService.cs:line 27
+   at HuanBank.Api.Services.BankService.Login(String stk, String mk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\service\BankService.cs:line 80
+2026-10-06 14:45:48.563 +07:00 [ERR] Dang Nhap - Loi he thong khi STK doquanghuan dang nhap
+Oracle.ManagedDataAccess.Client.OracleException (0x80004005): ORA-01008: not all variables bound
+https://docs.oracle.com/error-help/db/ora-01008/
+   at OracleInternal.ServiceObjects.OracleFailoverMgrImpl.OnError(OracleConnection connection, CallHistoryRecord chr, Object mi, Exception ex, Boolean bTopLevelCall, Boolean& bCanRecordNewCall)
+   at Oracle.ManagedDataAccess.Client.OracleCommand.ExecuteScalar()
+   at Dapper.SqlMapper.ExecuteScalarImpl[T](IDbConnection cnn, CommandDefinition& command) in /_/Dapper/SqlMapper.cs:line 3036
+   at Dapper.SqlMapper.ExecuteScalar[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in /_/Dapper/SqlMapper.cs:line 601
+   at HuanBank.Api.DAO.AccountDAO.checkPassWord(String AccountNumber, String Password) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\DAO\AccountDAO.cs:line 23
+   at HuanBank.Api.Services.BankService.Login(String stk, String mk) in C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\service\BankService.cs:line 86
+2026-10-06 14:50:30.516 +07:00 [INF] Dang Nhap - Stk doquanghuan dang nhap thanh cong
+2026-10-06 14:51:12.094 +07:00 [INF] Xem thong tin - Xem thong tin doquanghuan thanh cong
+2026-10-06 14:51:21.944 +07:00 [WRN] Nap tien - So tai khoan doquanghuan nap tien that bai, so tien 0 khong hop le
+2026-10-06 14:51:29.109 +07:00 [INF] Nap Tien - So tai khoan doquanghuan nap tien thanh cong, so tien 1000000
+2026-10-06 14:51:29.109 +07:00 [INF] Xem so du - Xem so du doquanghuan thanh cong
+2026-10-06 14:51:36.209 +07:00 [WRN] Nap tien - So tai khoan doquanghuan nap tien that bai, so tien -10000 khong hop le
+2026-10-06 14:51:43.323 +07:00 [INF] Rut tien - So tai khoan doquanghuan rut tien thanh cong
+2026-10-06 14:51:56.530 +07:00 [WRN] Chuyen tien - So tai khoan doquanghuan chuyen tien that bai, ket qua validate: "CannotTransferToSelf"
+2026-10-06 14:52:01.141 +07:00 [WRN] Chuyen tien - So tai khoan doquanghuan2 khong ton tai, chuyen tien that bai
+2026-10-06 14:52:05.311 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan chuyen tien thanh cong cho so tai khoan doquanghuan1, So tien 10000
+2026-10-06 14:52:07.208 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan chuyen tien thanh cong cho so tai khoan doquanghuan1, So tien 10000
+2026-10-06 14:52:07.397 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan chuyen tien thanh cong cho so tai khoan doquanghuan1, So tien 10000
+2026-10-06 14:52:14.621 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan thanh cong
+2026-10-06 15:35:05.004 +07:00 [INF] Dang Nhap - Stk doquanghuan1 dang nhap thanh cong
+2026-10-06 15:35:26.697 +07:00 [INF] Chuyen tien - So tai khoan doquanghuan1 chuyen tien thanh cong cho so tai khoan doquanghuan, So tien 100000
+2026-10-06 15:35:33.370 +07:00 [INF] Xem lich su - Xem lich su giao dich doquanghuan1 thanh cong

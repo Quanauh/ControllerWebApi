@@ -1,4 +1,4 @@
-namespace HuanBank.Api.Request;
+namespace HuanBank.Api.Model.Request;
 using System.ComponentModel.DataAnnotations;
 public class RegisterRequest
 {
@@ -9,8 +9,8 @@ public class RegisterRequest
     [Required]
     public required string Email {get;set;}
     [Required]
-    public required string Dateofbirth {get;set;}
-    public string? Adress {get;set;}
+    public required string DateOfBirth {get;set;}
+    public string? Address {get;set;}
     [Required]
     public required string AccountNumber {get;set;}
     [Required]

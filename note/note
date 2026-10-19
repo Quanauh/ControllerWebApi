@@ -8,10 +8,9 @@ Nếu class đó nằm trong 1 class khác sẽ được gán kiểu private.
 - khi inject can gach duoi x
 vd private readonly IAccountDAO _acd 
 - mo hinh layer (moi 1 lop se co model rieng de giam su phu thuoc) x
-* enum co the tao rieng 1 thu muc hoac project      
-- tim hieu clean Architecture
-- them vi du DI
-- tach rieng xu ly validate
-- bank chi quan tam co tung nay ham, catch phai de duoi DAO, cu throw cho thang cuoi cung
+* enum co the tao rieng 1 thu muc hoac project   x     
+- tim hieu clean Architecture  x
+- tach rieng xu ly validate   x
+- bank chi quan tam co tung nay ham, catch phai de duoi DAO, cu throw cho thang cuoi cung x
 
-5/10
+8/10

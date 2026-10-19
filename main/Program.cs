@@ -7,6 +7,8 @@ using System.Text;
 using Microsoft.OpenApi;
 using HuanBank.Api.Services;
 using HuanBank.Api.DAO;
+using HuanBank.Api.Validators;
+using HuanBank.Api.Util;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,7 +25,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IAccountDAO,AccountDAO>();
 builder.Services.AddScoped<IBankService,BankService>();
-
+builder.Services.AddScoped<IAccountValidator, AccountValidator>();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -41,7 +43,7 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
-builder.Services.AddSingleton<TokenService>();
+builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

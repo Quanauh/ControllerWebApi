@@ -1,3 +1,4 @@
+namespace HuanBank.Api.Result;
 public enum TransactionResult
 {
     Success,

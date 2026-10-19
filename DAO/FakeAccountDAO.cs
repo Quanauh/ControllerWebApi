@@ -1,10 +1,11 @@
 using Dapper;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using HuanBank.Api.Entities;
+using HuanBank.Api.DAO.Models;
+using HuanBank.Api.Util;
 namespace HuanBank.Api.DAO;
 
-class FakeAccountDAO: IAccountDAO
+class FakeAccountDAO : IAccountDAO
 
 {
     public bool Exists(string stk) => stk == "TEST123";
@@ -15,8 +16,16 @@ class FakeAccountDAO: IAccountDAO
     }
 
     // Tạo tài khoản
-    public void CreateAccount(string ten, string sdt, string email, string ngaysinh, string diachi, string stk, string mk)
+    public void CreateAccount(CreateAccountData account)
     {
+        string ten = account.Name;
+        string sdt = account.Phone;
+        string email = account.Email;
+        string ngaysinh = account.DateOfBirth;
+        string? diachi = account.Address;
+        string stk = account.AccountNumber;
+        string mk = account.Password;
+
         using OracleConnection conn = Database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
@@ -94,14 +103,14 @@ class FakeAccountDAO: IAccountDAO
         }
     }
     // chuyen tien bang procedure
-        public void TransferMoney1(string stk1, string stk2, decimal a)
+    public void TransferMoney1(string stk1, string stk2, decimal a)
     {
         using OracleConnection conn = Database.GetConnection();
         var p = new DynamicParameters();
         p.Add(":p_stk1", stk1);
         p.Add(":p_stk2", stk2);
         p.Add(":p_sotien", a);
- 
+
         conn.Execute("sp_chuyen_tien", p, commandType: CommandType.StoredProcedure);
     }
 
@@ -134,13 +143,13 @@ class FakeAccountDAO: IAccountDAO
         using OracleConnection conn = Database.GetConnection();
         return conn.ExecuteScalar<decimal>("SELECT sodu FROM tai_khoan WHERE SOTK=:stk", new { stk });
     }
-    public void Withdraw1(string stk,decimal a)
+    public void Withdraw1(string stk, decimal a)
     {
-        using OracleConnection conn=Database.GetConnection();
-        var p=new DynamicParameters();
-        p.Add(":p_stk",stk);
-        p.Add(":p_sotien",a);
-        conn.Execute("sp_rut_tien",p,commandType:CommandType.StoredProcedure);
+        using OracleConnection conn = Database.GetConnection();
+        var p = new DynamicParameters();
+        p.Add(":p_stk", stk);
+        p.Add(":p_sotien", a);
+        conn.Execute("sp_rut_tien", p, commandType: CommandType.StoredProcedure);
 
     }
     //Rut tien - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
@@ -167,28 +176,28 @@ class FakeAccountDAO: IAccountDAO
         }
     }
 
-    public AccountInfo? GetAccountInfor(string stk)
+    public AccountRecord? GetAccountInfor(string stk)
     {
         using OracleConnection conn = Database.GetConnection();
 
-        string sql = @"SELECT tk.SOTK, kh.HOTEN, kh.SDT, kh.EMAIL, kh.NGAYSINH, kh.DIACHI, tk.SODU
+        string sql = @"SELECT tk.SOTK as AccountNumber, kh.HOTEN as FullName, kh.SDT as Phone, kh.EMAIL, kh.NGAYSINH as DateOfBirth, kh.DIACHI as Address, tk.SODU as Balance
                        FROM TAI_KHOAN tk
                        JOIN KHACH_HANG kh ON tk.MAKH = kh.MAKH
                        WHERE tk.SOTK = :stk";
 
-        return conn.QueryFirstOrDefault<AccountInfo>(sql, new { stk });
+        return conn.QueryFirstOrDefault<AccountRecord>(sql, new { stk });
     }
 
-    
-    public List<TransactionHistory> GetTransactionHistory(string stk)
+
+    public List<TransactionHistoryRecord> GetTransactionHistory(string stk)
     {
         using OracleConnection conn = Database.GetConnection();
-        string sql = @"SELECT gd.SOTK, gd.SOTK_DOI, gd.LOAIGD, gd.SOTIEN, ls.SODUSAUGD, gd.THOIGIANGD
+        string sql = @"SELECT gd.SOTK as AccountNumber, gd.SOTK_DOI as CounterAccount, gd.LOAIGD as TransactionType, gd.SOTIEN as Amount, 0 as BalanceBefore, ls.SODUSAUGD as BalanceAfter, gd.THOIGIANGD as TransactionDate
                         FROM GIAO_DICH gd
                         JOIN LICH_SU_SO_DU ls ON ls.MAGD = gd.MAGD AND ls.SOTK = :stk1
                         WHERE gd.SOTK = :stk2 OR gd.SOTK_DOI = :stk3
                         ORDER BY gd.THOIGIANGD ASC";
 
-        return conn.Query<TransactionHistory>(sql, new { stk1 = stk, stk2 = stk, stk3 = stk }).ToList();
+        return conn.Query<TransactionHistoryRecord>(sql, new { stk1 = stk, stk2 = stk, stk3 = stk }).ToList();
     }
 }

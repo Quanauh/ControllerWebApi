@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-namespace HuanBank.Api.Request;
+namespace HuanBank.Api.Model.Request;
 public class WithdrawRequest
 {
     [Required]
