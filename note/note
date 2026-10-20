@@ -13,4 +13,3 @@ vd private readonly IAccountDAO _acd
 - tach rieng xu ly validate   x
 - bank chi quan tam co tung nay ham, catch phai de duoi DAO, cu throw cho thang cuoi cung x
 
-8/10

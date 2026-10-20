@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HuanBank.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0257a207539f72c31605c21a29a35efe4bd78140")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+958897739d2d7355825c0899724603c2c850e6cf")]
 [assembly: System.Reflection.AssemblyProductAttribute("HuanBank.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HuanBank.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,5 +1,12 @@
-namespace HuanBank.Api.Model.Request;
 using System.ComponentModel.DataAnnotations;
+namespace HuanBank.Api.Model.Request;
+public class LoginRequest
+{
+    [Required]
+    public required string stk {get;set;}
+    [Required]
+    public required string mk {get;set;}
+}
 public class RegisterRequest
 {
     [Required]
