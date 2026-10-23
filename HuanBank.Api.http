@@ -1,6 +1,6 @@
 @HuanBankApi_HostAddress = http://localhost:5079
 
-POST {{HuanBankApi_HostAddress}}/Login/
+POST {{HuanBankApi_HostAddress}}/Auth/Login/
 Content-Type: application/json
 
 {

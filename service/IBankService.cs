@@ -5,8 +5,8 @@ namespace HuanBank.Api.Services;
 public interface IBankService
 {
     bool AccountExists(string stk);
-    TransactionResult CreateAccount(RegisterAccountCommand command);
-    TransactionResult Login(string stk, string mk);
+    RegistrationResult CreateAccount(RegisterAccountCommand command);
+    LoginResult Login(string stk, string mk);
     TransactionResult Deposit(string stk, decimal a);
     TransactionResult Withdraw(string stk, decimal a);
     TransactionResult TransferMoney(string stk1, string stk2, decimal a);

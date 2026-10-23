@@ -7,8 +7,8 @@ public interface IAccountDAO
     public abstract bool checkPassWord(string AccountNumber, string Password);
     void CreateAccount(CreateAccountData account);
     void Deposit(string AccountNumber, decimal a);
-    void Withdraw(string AccountNumber, decimal a);
-    void TransferMoney(string AccountNumber1, string AccountNumber2, decimal a);
+    bool TryWithdraw(string AccountNumber, decimal a);
+    bool TryTransferMoney(string AccountNumber1, string AccountNumber2, decimal a);
     decimal GetBalance(string AccountNumber);
     AccountRecord? GetAccountInfor(string AccountNumber);
     List<TransactionHistoryRecord> GetTransactionHistory(string AccountNumber);

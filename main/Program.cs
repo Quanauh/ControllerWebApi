@@ -25,7 +25,8 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IAccountDAO,AccountDAO>();
 builder.Services.AddScoped<IBankService,BankService>();
-builder.Services.AddScoped<IAccountValidator, AccountValidator>();
+builder.Services.AddScoped<IRegisterAccountValidator, RegisterAccountValidator>();
+builder.Services.AddScoped<IMoneyTransactionValidator, MoneyTransactionValidator>();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

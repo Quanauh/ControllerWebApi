@@ -93,7 +93,7 @@ class AccountDAO : IAccountDAO
     private (decimal before, decimal after) UpdateBalance(OracleConnection conn, OracleTransaction tran, string AccountNumber, decimal delta)
     {
         decimal before = conn.ExecuteScalar<decimal>(
-            "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber", new { AccountNumber }, tran);
+            "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber FOR UPDATE", new { AccountNumber }, tran);
 
         var p = new DynamicParameters();
         p.Add(":delta", delta);
@@ -109,12 +109,29 @@ class AccountDAO : IAccountDAO
     }
 
     // Chuyen tien - chi 1 dong TRANSACTIONS, chi track so du ben khoi tao (stk1)
-    public void TransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
+    public bool TryTransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
     {
         using OracleConnection conn = Database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
+            conn.Query<string>(
+                @"SELECT ACCOUNT_NUMBER
+                  FROM ACCOUNTS
+                  WHERE ACCOUNT_NUMBER IN (:AccountNumber1, :AccountNumber2)
+                  ORDER BY ACCOUNT_NUMBER
+                  FOR UPDATE",
+                new { AccountNumber1, AccountNumber2 }, trann).AsList();
+
+            decimal senderBalance = conn.ExecuteScalar<decimal>(
+                "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber",
+                new { AccountNumber = AccountNumber1 }, trann);
+            if (senderBalance < a)
+            {
+                trann.Rollback();
+                return false;
+            }
+
             var (before1, after1) = UpdateBalance(conn, trann, AccountNumber1, -a);
             var (before2, after2) = UpdateBalance(conn, trann, AccountNumber2, a);
 
@@ -131,6 +148,7 @@ class AccountDAO : IAccountDAO
                 new { transactionId, AccountNumber2, AccountNumber1, a, before2, after2 }, trann);
 
             trann.Commit();
+            return true;
         }
         catch
         {
@@ -164,12 +182,21 @@ class AccountDAO : IAccountDAO
     }
 
     // Rut tien
-    public void Withdraw(string AccountNumber, decimal a)
+    public bool TryWithdraw(string AccountNumber, decimal a)
     {
         using OracleConnection conn = Database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
+            decimal balance = conn.ExecuteScalar<decimal>(
+                "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber FOR UPDATE",
+                new { AccountNumber }, trann);
+            if (balance < a)
+            {
+                trann.Rollback();
+                return false;
+            }
+
             var (before, after) = UpdateBalance(conn, trann, AccountNumber, -a);
 
             int transactionId = GetNextId(conn, trann, "seq_transactions");
@@ -179,6 +206,7 @@ class AccountDAO : IAccountDAO
                 new { transactionId, AccountNumber, a, before, after }, trann);
 
             trann.Commit();
+            return true;
         }
         catch
         {

@@ -77,12 +77,21 @@ class FakeAccountDAO : IAccountDAO
     }
 
     //chuyen tien - 1 dong GIAO_DICH + 2 dong SO_DU_SAU_GD (ben gui, ben nhan), cung 1 transaction
-    public void TransferMoney(string stk1, string stk2, decimal a)
+    public bool TryTransferMoney(string stk1, string stk2, decimal a)
     {
         using OracleConnection conn = Database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
+            decimal balance = conn.ExecuteScalar<decimal>(
+                "SELECT SODU FROM TAI_KHOAN WHERE SOTK = :stk FOR UPDATE",
+                new { stk = stk1 }, trann);
+            if (balance < a)
+            {
+                trann.Rollback();
+                return false;
+            }
+
             decimal soDuStk1 = UpdateBalance(conn, trann, stk1, -a);
             decimal soDuStk2 = UpdateBalance(conn, trann, stk2, a);
 
@@ -95,6 +104,7 @@ class FakeAccountDAO : IAccountDAO
             BalanceAfterTranaction(conn, trann, maGd, stk2, soDuStk2);
 
             trann.Commit();
+            return true;
         }
         catch
         {
@@ -153,12 +163,21 @@ class FakeAccountDAO : IAccountDAO
 
     }
     //Rut tien - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
-    public void Withdraw(string stk, decimal a)
+    public bool TryWithdraw(string stk, decimal a)
     {
         using OracleConnection conn = Database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
+            decimal balance = conn.ExecuteScalar<decimal>(
+                "SELECT SODU FROM TAI_KHOAN WHERE SOTK = :stk FOR UPDATE",
+                new { stk }, trann);
+            if (balance < a)
+            {
+                trann.Rollback();
+                return false;
+            }
+
             decimal soDuMoi = UpdateBalance(conn, trann, stk, -a);
 
             int maGd = GetNextId(conn, trann, "seq_giao_dich");
@@ -168,6 +187,7 @@ class FakeAccountDAO : IAccountDAO
 
             BalanceAfterTranaction(conn, trann, maGd, stk, soDuMoi);
             trann.Commit();
+            return true;
         }
         catch
         {

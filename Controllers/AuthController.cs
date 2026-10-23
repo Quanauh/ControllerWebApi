@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using HuanBank.Api.Services;
 using HuanBank.Api.Model.Request;
-using HuanBank.Api.Exceptions;
 using HuanBank.Api.Result;
 using HuanBank.Api.Services.Models;
 using HuanBank.Api.Util;
@@ -29,11 +28,11 @@ public class AuthController : ControllerBase
             var kq = _qlnh.Login(req.stk, req.mk);
             return kq switch
             {
-                TransactionResult.Success =>
+                LoginResult.Success =>
                     Ok(new { message = "Dang nhap thanh cong", token = tokenService.GenerateToken(req.stk) }),
-                TransactionResult.AccountNotFound =>
+                LoginResult.AccountNotFound =>
                     NotFound(new { message = "Khong tim thay tai khoan" }),
-                TransactionResult.IncorrectPassword =>
+                LoginResult.IncorrectPassword =>
                     BadRequest(new { message = "Sai mat khau" }),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
@@ -63,31 +62,20 @@ public class AuthController : ControllerBase
             var kq = _qlnh.CreateAccount(command);
             return kq switch
             {
-                TransactionResult.Success =>
+                RegistrationResult.Success =>
                     Created($"/account/{req.AccountNumber}", new { message = "Tao tai khoan thanh cong", stk = req.AccountNumber }),
-                TransactionResult.IsNull =>
+                RegistrationResult.MissingRequiredField =>
                     BadRequest(new { message = "Khong duoc de trong thong tin" }),
-                TransactionResult.AccountAlreadyExists =>
+                RegistrationResult.AccountAlreadyExists =>
                     Conflict(new { message = "So tai khoan da ton tai" }),
-                TransactionResult.InvalidDate =>
+                RegistrationResult.PhoneAlreadyExists =>
+                    Conflict(new { message = "So dien thoai da ton tai" }),
+                RegistrationResult.EmailAlreadyExists =>
+                    Conflict(new { message = "Email da ton tai" }),
+                RegistrationResult.InvalidDate =>
                     BadRequest(new { message = "Ngay sinh khong hop le" }),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
-        }
-        catch (AccountAlreadyExistsException)
-        {
-            _logger.LogWarning("Tao tai khoan - So tai khoan {AccountNumber} da ton tai", req.AccountNumber);
-            return Conflict(new { message = "So tai khoan da ton tai" });
-        }
-        catch (PhoneAlreadyExistsException)
-        {
-            _logger.LogWarning("Tao tai khoan - So dien thoai {Phone} da ton tai", req.Phone);
-            return Conflict(new { message = "So dien thoai da ton tai" });
-        }
-        catch (EmailAlreadyExistsException)
-        {
-            _logger.LogWarning("Tao tai khoan - Email {Email} da ton tai", req.Email);
-            return Conflict(new { message = "Email da ton tai" });
         }
         catch (Exception ex)
         {

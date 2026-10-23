@@ -8,7 +8,6 @@ namespace HuanBank.Api.Controller;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-
 public class AccountController : ControllerBase
 {
     private readonly IBankService _qlnh;
