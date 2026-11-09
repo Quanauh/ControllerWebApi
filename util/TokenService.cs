@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using HuanBank.Api.Authorization;
 namespace HuanBank.Api.Util;
 public class TokenService
 {
@@ -14,9 +15,15 @@ public class TokenService
 
     public string GenerateToken(string stk)
     {
+        var adminAccounts = _config.GetSection("Authorization:AdminAccounts").Get<string[]>() ?? [];
+        var role = adminAccounts.Contains(stk, StringComparer.Ordinal)
+            ? BankRoles.Admin
+            : BankRoles.Customer;
+
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, stk)   // day chinh la "sub" - danh tinh nguoi dang nhap
+            new Claim(ClaimTypes.NameIdentifier, stk),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

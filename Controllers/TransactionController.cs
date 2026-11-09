@@ -6,11 +6,12 @@ using System.Security.Claims;
 using HuanBank.Api.Services;
 using HuanBank.Api.Model.Request;
 using HuanBank.Api.Result;
+using HuanBank.Api.Authorization;
 namespace HuanBank.Api.Controller;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
+[Authorize(Policy = BankPolicies.AccountAccess)]
 public class TransactionController : ControllerBase
 {
     private readonly IBankService _qlnh;

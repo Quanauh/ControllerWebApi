@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi;
@@ -9,6 +10,7 @@ using HuanBank.Api.Services;
 using HuanBank.Api.DAO;
 using HuanBank.Api.Validators;
 using HuanBank.Api.Util;
+using HuanBank.Api.Authorization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -45,6 +47,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IAuthorizationHandler, AccountAccessHandler>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -62,7 +66,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(BankPolicies.AccountAccess, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole(BankRoles.Customer, BankRoles.Admin);
+        policy.AddRequirements(new AccountAccessRequirement());
+    });
+});
 builder.Services.AddLogging(b =>
     b.AddSerilog(dispose: true)
 );  

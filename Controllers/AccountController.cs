@@ -3,11 +3,12 @@ using System.Security.Claims;
 using HuanBank.Api.Services;
 using HuanBank.Api.Model.Responses;
 using Microsoft.AspNetCore.Authorization;
+using HuanBank.Api.Authorization;
 namespace HuanBank.Api.Controller;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
+[Authorize(Policy = BankPolicies.AccountAccess)]
 public class AccountController : ControllerBase
 {
     private readonly IBankService _qlnh;
