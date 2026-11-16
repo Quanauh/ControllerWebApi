@@ -57,3 +57,13 @@ C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\bin\Debug\net10.0\Microsof
 C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\bin\Debug\net10.0\HuanBank.Api.staticwebassets.runtime.json
+C:\Users\Admin\OneDrive\Documents\WebApi\HuanBank.Api\obj\Debug\net10.0\compressed\imy7s7ejck-{0}-5e212nh7hm-5e212nh7hm.gz
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\appsettings.Development.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\appsettings.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.staticwebassets.runtime.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.staticwebassets.endpoints.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.deps.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.runtimeconfig.json
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.dll
+C:\Users\Admin\AppData\Local\Temp\HuanBankSwaggerBuild\HuanBank.Api.pdb

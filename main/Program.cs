@@ -140,7 +140,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseStaticFiles();
+    app.UseSwaggerUI(options =>
+        options.InjectStylesheet("/swagger-ui/custom.css"));
 }
 
 // app.UseHttpsRedirection();

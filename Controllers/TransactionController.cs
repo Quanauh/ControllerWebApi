@@ -25,7 +25,7 @@ public class TransactionController : ControllerBase
     private string CurrentStk => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
     [HttpPost("{accountNumber}/Deposit")]
-    [Authorize(Policy = BankPolicies.AdminOnly)]
+    [Authorize(Policy = BankPolicies.AccountAccess)]
     public IActionResult Deposit(string accountNumber, [FromBody] DepositRequest req)
     {
         try

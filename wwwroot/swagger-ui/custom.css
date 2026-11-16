@@ -1,0 +1,21 @@
+/* Keep long tokens readable and the response actions clear of the text. */
+.swagger-ui .responses-table .highlight-code > pre.microlight,
+.swagger-ui .curl-command pre {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    padding-bottom: 48px;
+}
+
+.swagger-ui .responses-table .highlight-code > pre.microlight code,
+.swagger-ui .curl-command pre code {
+    white-space: inherit !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.swagger-ui .responses-table .copy-to-clipboard,
+.swagger-ui .responses-table .download-contents,
+.swagger-ui .curl-command .copy-to-clipboard {
+    z-index: 1;
+}
