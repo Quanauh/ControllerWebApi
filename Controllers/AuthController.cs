@@ -26,14 +26,18 @@ public class AuthController : ControllerBase
         try
         {
             var kq = _qlnh.Login(req.stk, req.mk);
-            return kq switch
+            return kq.Result switch
             {
                 LoginResult.Success =>
-                    Ok(new { message = "Dang nhap thanh cong", token = tokenService.GenerateToken(req.stk) }),
+                    Ok(new { message = "Dang nhap thanh cong", token = tokenService.GenerateToken(req.stk, kq.Role!) }),
                 LoginResult.AccountNotFound =>
                     NotFound(new { message = "Khong tim thay tai khoan" }),
                 LoginResult.IncorrectPassword =>
                     BadRequest(new { message = "Sai mat khau" }),
+                LoginResult.AccountInactive =>
+                    StatusCode(403, new { message = "Tai khoan khong hoat dong" }),
+                LoginResult.InvalidRole =>
+                    StatusCode(403, new { message = "Vai tro tai khoan khong hop le" }),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
         }

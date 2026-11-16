@@ -11,6 +11,13 @@ public class CreateAccountData
     public required string Password { get; set; }
 }
 
+public sealed class LoginAccountRecord
+{
+    public string Password { get; set; } = "";
+    public string Role { get; set; } = "";
+    public string Status { get; set; } = "";
+}
+
 public class AccountRecord
 {
     public string? AccountNumber { get; set; }

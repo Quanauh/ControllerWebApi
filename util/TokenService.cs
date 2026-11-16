@@ -13,12 +13,10 @@ public class TokenService
         this._config = config;
     }
 
-    public string GenerateToken(string stk)
+    public string GenerateToken(string stk, string role)
     {
-        var adminAccounts = _config.GetSection("Authorization:AdminAccounts").Get<string[]>() ?? [];
-        var role = adminAccounts.Contains(stk, StringComparer.Ordinal)
-            ? BankRoles.Admin
-            : BankRoles.Customer;
+        if (role != BankRoles.Admin && role != BankRoles.Customer)
+            throw new ArgumentException("Unsupported role", nameof(role));
 
         var claims = new[]
         {

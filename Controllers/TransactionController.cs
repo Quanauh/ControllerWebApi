@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using HuanBank.Api.Services;
+using HuanBank.Api.Services.Models;
 using HuanBank.Api.Model.Request;
 using HuanBank.Api.Result;
 using HuanBank.Api.Authorization;
@@ -11,7 +12,7 @@ namespace HuanBank.Api.Controller;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Policy = BankPolicies.AccountAccess)]
+[Authorize]
 public class TransactionController : ControllerBase
 {
     private readonly IBankService _qlnh;
@@ -23,30 +24,30 @@ public class TransactionController : ControllerBase
     }
     private string CurrentStk => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-    [HttpPost("Deposit")]
-    public IActionResult Deposit([FromBody] DepositRequest req)
+    [HttpPost("{accountNumber}/Deposit")]
+    [Authorize(Policy = BankPolicies.AdminOnly)]
+    public IActionResult Deposit(string accountNumber, [FromBody] DepositRequest req)
     {
         try
         {
-            var kq = _qlnh.Deposit(CurrentStk, req.Amount);
+            var kq = _qlnh.Deposit(accountNumber, req.Amount);
             return kq switch
             {
-                TransactionResult.AccountNotFound =>
-               NotFound(new { message = "Khong tim thay tai khoan" }),
-                TransactionResult.InvalidAmount =>
-                    BadRequest(new { message = "So tien khong hop le" }),
-                TransactionResult.Success =>
-                    Ok(new { message = "Nap tien thanh cong", soDu = _qlnh.GetBalance(CurrentStk) }),
+                { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.InvalidAmount } => BadRequest(kq),
+                { Code: TransactionCodes.Success } =>
+                    Ok(new { kq.Code, kq.Message, soDu = _qlnh.GetBalance(accountNumber) }),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Nap tien - Loi he thong khi STK {AccountNumber} nap tien", CurrentStk);
+            _logger.LogError(ex, "Nap tien - Loi he thong khi STK {AccountNumber} nap tien", accountNumber);
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }
     [HttpPost("Withdraw")]
+    [Authorize(Policy = BankPolicies.CustomerOnly)]
     public IActionResult Withdraw([FromBody] WithdrawRequest req)
     {
         try
@@ -54,14 +55,9 @@ public class TransactionController : ControllerBase
             var kq = _qlnh.Withdraw(CurrentStk, req.Amount);
             return kq switch
             {
-                TransactionResult.Success =>
-                Ok(new { message = "Rut tien thanh cong" }),
-                TransactionResult.AccountNotFound =>
-                    NotFound(new { message = "Khong tim thay tai khoan" }),
-                TransactionResult.InvalidAmount =>
-                    BadRequest(new { message = "So tien khong hop le" }),
-                TransactionResult.InsufficientBalance =>
-                    BadRequest(new { message = "So du khong du" }),
+                { Code: TransactionCodes.Success } => Ok(kq),
+                { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.InvalidAmount or TransactionCodes.InsufficientBalance } => BadRequest(kq),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
         }
@@ -72,6 +68,7 @@ public class TransactionController : ControllerBase
         }
     }
     [HttpPost("TransferMoney")]
+    [Authorize(Policy = BankPolicies.CustomerOnly)]
     public IActionResult TransferMoney([FromBody] TransferRequest req)
     {
         try
@@ -79,16 +76,9 @@ public class TransactionController : ControllerBase
             var kq = _qlnh.TransferMoney(CurrentStk, req.CounterAccount, req.Amount);
             return kq switch
             {
-                TransactionResult.Success =>
-                Ok(new { message = "Chuyen tien thanh cong" }),
-                TransactionResult.AccountNotFound =>
-                    NotFound(new { message = "Khong tim thay tai khoan" }),
-                TransactionResult.InvalidAmount =>
-                    BadRequest(new { message = "So tien khong hop le" }),
-                TransactionResult.InsufficientBalance =>
-                    BadRequest(new { message = "So du khong du" }),
-                TransactionResult.CannotTransferToSelf =>
-                    BadRequest(new { message = "Khong the chuyen tien cho chinh minh" }),
+                { Code: TransactionCodes.Success } => Ok(kq),
+                { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.InvalidAmount or TransactionCodes.InsufficientBalance or TransactionCodes.CannotTransferToSelf } => BadRequest(kq),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
         }

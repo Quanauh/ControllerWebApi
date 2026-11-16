@@ -1,5 +1,7 @@
 # Báo cáo kiểm tra RBAC và ABAC của HuanBank.Api
 
+> Lưu ý: phần đánh giá dưới đây mô tả phiên bản trước khi triển khai phân quyền dựa trên `ACCOUNTS.ROLE` ngày 11/11/2026. Xem `BAO_CAO_THAY_DOI.md` để biết hành vi hiện tại.
+
 ## Kết luận
 
 Dự án có xác thực JWT, gán vai trò `Customer` hoặc `Admin`, và yêu cầu policy `AccountAccess` cho các API tài khoản, giao dịch. Các API hiện tại lấy tài khoản nguồn từ claim trong token nên khách hàng thông thường chỉ thao tác trên tài khoản của mình. Tuy nhiên, quy tắc ABAC trong handler chưa thực sự kiểm tra đối tượng tài khoản ở các endpoint hiện có; quyền `Admin` được mô tả là truy cập mọi tài khoản nhưng chưa có API nào thực hiện điều đó. Vì vậy, RBAC mới ở mức nền tảng, còn ABAC chưa đạt mục tiêu ghi trong mã nguồn.

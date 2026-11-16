@@ -10,21 +10,33 @@ namespace HuanBank.Api.DAO;
 using HuanBank.Api.Util;
 class AccountDAO : IAccountDAO
 {
+    private readonly Database _database;
+
+    public AccountDAO(Database database) => _database = database;
+
     // Kiem tra ton tai
     public bool Exists(string AccountNumber)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         int dem = conn.ExecuteScalar<int>(
             "SELECT COUNT(*) FROM ACCOUNTS WHERE ACCOUNT_NUMBER=:AccountNumber", new { AccountNumber });
         return dem > 0;
     }
 
-    public bool checkPassWord(string AccountNumber, string Password)
+    public LoginAccountRecord? GetLoginAccount(string accountNumber)
     {
-        using OracleConnection conn = Database.GetConnection();
-        int dem = conn.ExecuteScalar<int>(
-            "SELECT COUNT(*) FROM ACCOUNTS WHERE ACCOUNT_NUMBER=:AccountNumber AND PASSWORD=:Password", new { AccountNumber, Password });
-        return dem > 0;
+        using OracleConnection conn = _database.GetConnection();
+        return conn.QuerySingleOrDefault<LoginAccountRecord>(
+            "SELECT PASSWORD, ROLE, STATUS FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :accountNumber",
+            new { accountNumber });
+    }
+
+    public string? GetActiveRole(string accountNumber)
+    {
+        using OracleConnection conn = _database.GetConnection();
+        return conn.QuerySingleOrDefault<string>(
+            "SELECT ROLE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :accountNumber AND STATUS = 'ACTIVE'",
+            new { accountNumber });
     }
 
     private int GetNextId(OracleConnection conn, OracleTransaction tran, string tenSequence)
@@ -35,7 +47,7 @@ class AccountDAO : IAccountDAO
     // Tao ti khoan
     public void CreateAccount(CreateAccountData account)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -56,7 +68,7 @@ class AccountDAO : IAccountDAO
                 trann);
 
             conn.Execute(
-                "INSERT INTO ACCOUNTS (ACCOUNT_NUMBER, CUSTOMER_ID, PASSWORD, BALANCE) VALUES (:AccountNumber, :customerId, :Password, 0)",
+                "INSERT INTO ACCOUNTS (ACCOUNT_NUMBER, CUSTOMER_ID, PASSWORD, BALANCE, STATUS, ROLE) VALUES (:AccountNumber, :customerId, :Password, 0, 'ACTIVE', 'Customer')",
                 new { account.AccountNumber, customerId, Password = account.Password }, trann);
 
             trann.Commit();
@@ -111,7 +123,7 @@ class AccountDAO : IAccountDAO
     // Chuyen tien - chi 1 dong TRANSACTIONS, chi track so du ben khoi tao (stk1)
     public bool TryTransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -160,7 +172,7 @@ class AccountDAO : IAccountDAO
     // Nap tien
     public void Deposit(string AccountNumber, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -184,7 +196,7 @@ class AccountDAO : IAccountDAO
     // Rut tien
     public bool TryWithdraw(string AccountNumber, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -217,14 +229,14 @@ class AccountDAO : IAccountDAO
 
     public decimal GetBalance(string AccountNumber)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         return conn.ExecuteScalar<decimal>(
             "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber", new { AccountNumber });
     }
 
     public AccountRecord? GetAccountInfor(string AccountNumber)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
 
         string sql = @"SELECT a.ACCOUNT_NUMBER as AccountNumber, c.FULL_NAME as FullName, c.PHONE, c.EMAIL, c.DATE_OF_BIRTH as DateOfBirth, c.ADDRESS, a.BALANCE
                        FROM ACCOUNTS a
@@ -236,7 +248,7 @@ class AccountDAO : IAccountDAO
 
     public List<TransactionHistoryRecord> GetTransactionHistory(string AccountNumber)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         string sql = @"SELECT ACCOUNT_NUMBER as AccountNumber , COUNTERPART_ACCOUNT_NUMBER as CounterAccount, TRANSACTION_TYPE as TransactionType, AMOUNT,BALANCE_BEFORE as BalanceBefore, BALANCE_AFTER as BalanceAfter, TRANSACTION_DATE as TransactionDate
                         FROM TRANSACTIONS
                         WHERE ACCOUNT_NUMBER = :AccountNumber

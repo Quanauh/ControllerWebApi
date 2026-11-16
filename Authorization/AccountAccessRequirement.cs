@@ -5,7 +5,7 @@ namespace HuanBank.Api.Authorization;
 
 /// <summary>
 /// ABAC rule: a customer may access only their own account; an admin may access any account.
-/// The account resource is taken from the route when present, otherwise from the authenticated subject.
+/// The account resource must be supplied by the route.
 /// </summary>
 public sealed class AccountAccessRequirement : IAuthorizationRequirement { }
 
@@ -16,6 +16,10 @@ public sealed class AccountAccessHandler(IHttpContextAccessor httpContextAccesso
         AuthorizationHandlerContext context,
         AccountAccessRequirement requirement)
     {
+        var routeAccount = httpContextAccessor.HttpContext?.Request.RouteValues["accountNumber"]?.ToString();
+        if (string.IsNullOrWhiteSpace(routeAccount))
+            return Task.CompletedTask;
+
         if (context.User.IsInRole(BankRoles.Admin))
         {
             context.Succeed(requirement);
@@ -23,11 +27,9 @@ public sealed class AccountAccessHandler(IHttpContextAccessor httpContextAccesso
         }
 
         var subjectAccount = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var routeAccount = httpContextAccessor.HttpContext?.Request.RouteValues["accountNumber"]?.ToString();
-        var resourceAccount = routeAccount ?? subjectAccount;
-
         if (!string.IsNullOrWhiteSpace(subjectAccount) &&
-            string.Equals(subjectAccount, resourceAccount, StringComparison.Ordinal))
+            !string.IsNullOrWhiteSpace(routeAccount) &&
+            string.Equals(subjectAccount, routeAccount, StringComparison.Ordinal))
         {
             context.Succeed(requirement);
         }

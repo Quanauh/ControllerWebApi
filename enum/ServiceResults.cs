@@ -14,14 +14,7 @@ public enum LoginResult
 {
     Success,
     AccountNotFound,
-    IncorrectPassword
-}
-
-public enum TransactionResult
-{
-    Success,
-    AccountNotFound,
-    InvalidAmount,
-    InsufficientBalance,
-    CannotTransferToSelf
+    IncorrectPassword,
+    AccountInactive,
+    InvalidRole
 }

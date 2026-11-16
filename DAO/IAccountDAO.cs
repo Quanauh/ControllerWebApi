@@ -4,7 +4,8 @@ namespace HuanBank.Api.DAO;
 public interface IAccountDAO
 {
     public abstract bool Exists(string AccountNumber);
-    public abstract bool checkPassWord(string AccountNumber, string Password);
+    LoginAccountRecord? GetLoginAccount(string accountNumber);
+    string? GetActiveRole(string accountNumber);
     void CreateAccount(CreateAccountData account);
     void Deposit(string AccountNumber, decimal a);
     bool TryWithdraw(string AccountNumber, decimal a);

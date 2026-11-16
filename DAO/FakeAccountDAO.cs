@@ -8,8 +8,14 @@ namespace HuanBank.Api.DAO;
 class FakeAccountDAO : IAccountDAO
 
 {
+    private readonly Database _database;
+
+    public FakeAccountDAO(Database database) => _database = database;
+
     public bool Exists(string stk) => stk == "TEST123";
-    public bool checkPassWord(string stk, string mk) => mk == "1234";
+    public LoginAccountRecord? GetLoginAccount(string accountNumber) =>
+        accountNumber == "TEST123" ? new() { Password = "1234", Role = "Customer", Status = "ACTIVE" } : null;
+    public string? GetActiveRole(string accountNumber) => accountNumber == "TEST123" ? "Customer" : null;
     private int GetNextId(OracleConnection conn, OracleTransaction tran, string tenSequence)
     {
         return conn.ExecuteScalar<int>($"SELECT {tenSequence}.NEXTVAL FROM dual", transaction: tran);
@@ -26,7 +32,7 @@ class FakeAccountDAO : IAccountDAO
         string stk = account.AccountNumber;
         string mk = account.Password;
 
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -79,7 +85,7 @@ class FakeAccountDAO : IAccountDAO
     //chuyen tien - 1 dong GIAO_DICH + 2 dong SO_DU_SAU_GD (ben gui, ben nhan), cung 1 transaction
     public bool TryTransferMoney(string stk1, string stk2, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -115,7 +121,7 @@ class FakeAccountDAO : IAccountDAO
     // chuyen tien bang procedure
     public void TransferMoney1(string stk1, string stk2, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         var p = new DynamicParameters();
         p.Add(":p_stk1", stk1);
         p.Add(":p_stk2", stk2);
@@ -127,7 +133,7 @@ class FakeAccountDAO : IAccountDAO
     //Nạp tiền - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
     public void Deposit(string stk, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -150,12 +156,12 @@ class FakeAccountDAO : IAccountDAO
 
     public decimal GetBalance(string stk)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         return conn.ExecuteScalar<decimal>("SELECT sodu FROM tai_khoan WHERE SOTK=:stk", new { stk });
     }
     public void Withdraw1(string stk, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         var p = new DynamicParameters();
         p.Add(":p_stk", stk);
         p.Add(":p_sotien", a);
@@ -165,7 +171,7 @@ class FakeAccountDAO : IAccountDAO
     //Rut tien - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
     public bool TryWithdraw(string stk, decimal a)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
@@ -198,7 +204,7 @@ class FakeAccountDAO : IAccountDAO
 
     public AccountRecord? GetAccountInfor(string stk)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
 
         string sql = @"SELECT tk.SOTK as AccountNumber, kh.HOTEN as FullName, kh.SDT as Phone, kh.EMAIL, kh.NGAYSINH as DateOfBirth, kh.DIACHI as Address, tk.SODU as Balance
                        FROM TAI_KHOAN tk
@@ -211,7 +217,7 @@ class FakeAccountDAO : IAccountDAO
 
     public List<TransactionHistoryRecord> GetTransactionHistory(string stk)
     {
-        using OracleConnection conn = Database.GetConnection();
+        using OracleConnection conn = _database.GetConnection();
         string sql = @"SELECT gd.SOTK as AccountNumber, gd.SOTK_DOI as CounterAccount, gd.LOAIGD as TransactionType, gd.SOTIEN as Amount, 0 as BalanceBefore, ls.SODUSAUGD as BalanceAfter, gd.THOIGIANGD as TransactionDate
                         FROM GIAO_DICH gd
                         JOIN LICH_SU_SO_DU ls ON ls.MAGD = gd.MAGD AND ls.SOTK = :stk1

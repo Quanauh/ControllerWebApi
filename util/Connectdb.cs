@@ -1,17 +1,24 @@
-using Oracle.ManagedDataAccess.Client;
-namespace HuanBank.Api.Util;
-using Dapper;
-class Database
-{
-    private static string conStr =
-        "User Id=HUANBANK;" +
-        "Password=huan123;" +
-        "Data Source=localhost:1521/orclpdb";
+﻿using Oracle.ManagedDataAccess.Client;
 
-    public static OracleConnection GetConnection()
+namespace HuanBank.Api.Util;
+
+public sealed class Database
+{
+    private readonly string _connectionString;
+
+    public Database(IConfiguration configuration)
     {
-        OracleConnection conn = new OracleConnection(conStr);
+        _connectionString = configuration.GetConnectionString("Oracle")
+            ?? throw new InvalidOperationException("Missing ConnectionStrings:Oracle configuration.");
+
+        if (string.IsNullOrWhiteSpace(_connectionString))
+            throw new InvalidOperationException("ConnectionStrings:Oracle must not be empty.");
+    }
+
+    public OracleConnection GetConnection()
+    {
+        OracleConnection conn = new(_connectionString);
         conn.Open();
         return conn;
     }
-}          
+}

@@ -8,7 +8,6 @@ namespace HuanBank.Api.Controller;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Policy = BankPolicies.AccountAccess)]
 public class AccountController : ControllerBase
 {
     private readonly IBankService _qlnh;
@@ -21,14 +20,21 @@ public class AccountController : ControllerBase
     }
     private string CurrentStk => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
     [HttpGet("AccountInfo")]
-    public IActionResult GetAccountInfo()
+    [Authorize(Policy = BankPolicies.CustomerOnly)]
+    public IActionResult GetAccountInfo() => GetAccountInfoCore(CurrentStk);
+
+    [HttpGet("{accountNumber}/AccountInfo")]
+    [Authorize(Policy = BankPolicies.AccountAccess)]
+    public IActionResult GetAccountInfoByNumber(string accountNumber) => GetAccountInfoCore(accountNumber);
+
+    private IActionResult GetAccountInfoCore(string accountNumber)
     {
         try
         {
-            if (!_qlnh.AccountExists(CurrentStk))
+            if (!_qlnh.AccountExists(accountNumber))
                 return NotFound(new { message = "Khong tim thay tai khoan" });
 
-            var kq = _qlnh.GetAccountInfor(CurrentStk);
+            var kq = _qlnh.GetAccountInfor(accountNumber);
             if (kq == null) return NotFound(new { message = "Khong tim thay tai khoan" });
 
             return Ok(new AccountInfoResponse
@@ -44,40 +50,54 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lay thong tin - Loi he thong khi lay thong tin {AccountNumber}", CurrentStk);
+            _logger.LogError(ex, "Lay thong tin - Loi he thong khi lay thong tin {AccountNumber}", accountNumber);
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }
     [HttpGet("Balance")]
-    public IActionResult GetBalance()
+    [Authorize(Policy = BankPolicies.CustomerOnly)]
+    public IActionResult GetBalance() => GetBalanceCore(CurrentStk);
+
+    [HttpGet("{accountNumber}/Balance")]
+    [Authorize(Policy = BankPolicies.AccountAccess)]
+    public IActionResult GetBalanceByNumber(string accountNumber) => GetBalanceCore(accountNumber);
+
+    private IActionResult GetBalanceCore(string accountNumber)
     {
         try
         {
-            if (!_qlnh.AccountExists(CurrentStk))
+            if (!_qlnh.AccountExists(accountNumber))
                 return NotFound(new { message = "Khong tim thay tai khoan" });
 
-            var kq = _qlnh.GetBalance(CurrentStk);
+            var kq = _qlnh.GetBalance(accountNumber);
             return Ok(new BalanceResponse
             {
-                Stk = CurrentStk,
+                Stk = accountNumber,
                 SoDu = kq
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Xem so du - Loi he thong khi lay so du {AccountNumber}", CurrentStk);
+            _logger.LogError(ex, "Xem so du - Loi he thong khi lay so du {AccountNumber}", accountNumber);
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }
     [HttpGet("TransactionHistory")]
-    public IActionResult GetTransactionHistory()
+    [Authorize(Policy = BankPolicies.CustomerOnly)]
+    public IActionResult GetTransactionHistory() => GetTransactionHistoryCore(CurrentStk);
+
+    [HttpGet("{accountNumber}/TransactionHistory")]
+    [Authorize(Policy = BankPolicies.AccountAccess)]
+    public IActionResult GetTransactionHistoryByNumber(string accountNumber) => GetTransactionHistoryCore(accountNumber);
+
+    private IActionResult GetTransactionHistoryCore(string accountNumber)
     {
         try
         {
-            if (!_qlnh.AccountExists(CurrentStk))
+            if (!_qlnh.AccountExists(accountNumber))
                 return NotFound(new { message = "Khong tim thay tai khoan" });
 
-            var kq = _qlnh.GetTransactionHistory(CurrentStk);
+            var kq = _qlnh.GetTransactionHistory(accountNumber);
             List<TransactionHistoryResponse> response = kq.Select(gd => new TransactionHistoryResponse
             {
                 AccountNumber = gd.AccountNumber,
@@ -94,7 +114,7 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Lay lich su giao dich - Loi he thong khi lay lich su giao dich {AccountNumber}", CurrentStk);
+            _logger.LogError(ex, "Lay lich su giao dich - Loi he thong khi lay lich su giao dich {AccountNumber}", accountNumber);
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }

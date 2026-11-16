@@ -7,6 +7,7 @@ using HuanBank.Api.Validators;
 using HuanBank.Api.Services.Models;
 using HuanBank.Api.Result;
 using HuanBank.Api.Exceptions;
+using HuanBank.Api.Authorization;
 
 namespace HuanBank.Api.Services;
 
@@ -89,80 +90,87 @@ public class BankService : IBankService
     }
 
     // Dang nhap
-    public LoginResult Login(string AccountNumber, string Password)
+    public LoginOutcome Login(string AccountNumber, string Password)
     {
-        if (!AccountExists(AccountNumber))
+        var account = _acd.GetLoginAccount(AccountNumber);
+        if (account == null)
         {
             _logger.LogWarning("So tai khoan {AccountNumber} khong ton tai", AccountNumber);
-            return LoginResult.AccountNotFound;
+            return new(LoginResult.AccountNotFound);
         }
 
-        if (!_acd.checkPassWord(AccountNumber, Password))
+        if (!string.Equals(account.Password, Password, StringComparison.Ordinal))
         {
             _logger.LogWarning("Dang Nhap - So tai khoan {AccountNumber} nhap khong dung mat khau", AccountNumber);
-            return LoginResult.IncorrectPassword;
+            return new(LoginResult.IncorrectPassword);
         }
 
+        if (!string.Equals(account.Status, "ACTIVE", StringComparison.Ordinal))
+            return new(LoginResult.AccountInactive);
+
+        if (account.Role != BankRoles.Customer && account.Role != BankRoles.Admin)
+            return new(LoginResult.InvalidRole);
+
         _logger.LogInformation("Dang Nhap - Stk {AccountNumber} dang nhap thanh cong", AccountNumber);
-        return LoginResult.Success;
+        return new(LoginResult.Success, account.Role);
     }
 
     // Nap tien
-    public TransactionResult Deposit(string AccountNumber, decimal a)
+    public BusinessResponse Deposit(string AccountNumber, decimal a)
     {
         if (!AccountExists(AccountNumber))
         {
             _logger.LogWarning("Nap tien - So tai khoan {AccountNumber} khong ton tai, nap tien that bai", AccountNumber);
-            return TransactionResult.AccountNotFound;
+            return new(TransactionCodes.AccountNotFound, "Khong tim thay tai khoan");
         }
 
         var validation = _transactionValidator.ValidateAmount(a);
         if (validation != MoneyTransactionValidationResult.Success)
         {
             _logger.LogWarning("Nap tien - So tai khoan {AccountNumber} nap tien that bai, so tien {Amount} khong hop le", AccountNumber, a);
-            return TransactionResult.InvalidAmount;
+            return new(TransactionCodes.InvalidAmount, "So tien khong hop le");
         }
 
         _acd.Deposit(AccountNumber, a);
         _logger.LogInformation("Nap Tien - So tai khoan {AccountNumber} nap tien thanh cong, so tien {Amount}", AccountNumber, a);
-        return TransactionResult.Success;
+        return new(TransactionCodes.Success, "Nap tien thanh cong");
     }
 
     // Rut tien
-    public TransactionResult Withdraw(string AccountNumber, decimal a)
+    public BusinessResponse Withdraw(string AccountNumber, decimal a)
     {
         if (!AccountExists(AccountNumber))
         {
             _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} khong ton tai, rut tien that bai", AccountNumber);
-            return TransactionResult.AccountNotFound;
+            return new(TransactionCodes.AccountNotFound, "Khong tim thay tai khoan");
         }
 
         var validation = _transactionValidator.ValidateAmount(a);
         if (validation != MoneyTransactionValidationResult.Success)
         {
             _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} rut tien that bai, ket qua validate: {Result}", AccountNumber, validation);
-            return TransactionResult.InvalidAmount;
+            return new(TransactionCodes.InvalidAmount, "So tien khong hop le");
         }
 
         if (!_acd.TryWithdraw(AccountNumber, a))
         {
             _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} khong du so du", AccountNumber);
-            return TransactionResult.InsufficientBalance;
+            return new(TransactionCodes.InsufficientBalance, "So du khong du");
         }
         _logger.LogInformation("Rut tien - So tai khoan {AccountNumber} rut tien thanh cong", AccountNumber);
-        return TransactionResult.Success;
+        return new(TransactionCodes.Success, "Rut tien thanh cong");
     }
 
     // Chuyen tien
-    public TransactionResult TransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
+    public BusinessResponse TransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
     {
         var validation = _transactionValidator.ValidateTransfer(AccountNumber1, AccountNumber2, a);
         if (validation != MoneyTransactionValidationResult.Success)
         {
             return validation switch
             {
-                MoneyTransactionValidationResult.InvalidAmount => TransactionResult.InvalidAmount,
-                MoneyTransactionValidationResult.CannotTransferToSelf => TransactionResult.CannotTransferToSelf,
+                MoneyTransactionValidationResult.InvalidAmount => new(TransactionCodes.InvalidAmount, "So tien khong hop le"),
+                MoneyTransactionValidationResult.CannotTransferToSelf => new(TransactionCodes.CannotTransferToSelf, "Khong the chuyen tien cho chinh minh"),
                 _ => throw new ArgumentOutOfRangeException(nameof(validation))
             };
         }
@@ -170,23 +178,23 @@ public class BankService : IBankService
         if (!AccountExists(AccountNumber1))
         {
             _logger.LogWarning("Chuyen tien - So tai khoan gui {AccountNumber1} khong ton tai", AccountNumber1);
-            return TransactionResult.AccountNotFound;
+            return new(TransactionCodes.AccountNotFound, "Khong tim thay tai khoan");
         }
 
         if (!AccountExists(AccountNumber2))
         {
             _logger.LogWarning("Chuyen tien - So tai khoan {AccountNumber2} khong ton tai, chuyen tien that bai", AccountNumber2);
-            return TransactionResult.AccountNotFound;
+            return new(TransactionCodes.AccountNotFound, "Khong tim thay tai khoan");
         }
 
         if (!_acd.TryTransferMoney(AccountNumber1, AccountNumber2, a))
         {
             _logger.LogWarning("Chuyen tien - So tai khoan {AccountNumber1} khong du so du", AccountNumber1);
-            return TransactionResult.InsufficientBalance;
+            return new(TransactionCodes.InsufficientBalance, "So du khong du");
         }
 
         _logger.LogInformation("Chuyen tien - So tai khoan {AccountNumber1} chuyen tien thanh cong cho so tai khoan {AccountNumber2}, So tien {Amount}", AccountNumber1, AccountNumber2, a);
-        return TransactionResult.Success;
+        return new(TransactionCodes.Success, "Chuyen tien thanh cong");
     }
 
     public decimal GetBalance(string AccountNumber)

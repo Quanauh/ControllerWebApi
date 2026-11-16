@@ -9,4 +9,6 @@ public static class BankRoles
 public static class BankPolicies
 {
     public const string AccountAccess = "AccountAccess";
+    public const string CustomerOnly = "CustomerOnly";
+    public const string AdminOnly = "AdminOnly";
 }

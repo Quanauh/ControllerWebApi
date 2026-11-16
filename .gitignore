@@ -1,0 +1,8 @@
+.env
+backupsql/
+logs/
+tests/**/bin/
+tests/**/obj/
+*.md
+**/bin/
+**/obj/
