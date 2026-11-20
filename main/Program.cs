@@ -81,7 +81,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<IAuthorizationHandler, AccountAccessHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AccountAccessHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -108,8 +109,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .GetActiveRole(accountNumber);
 
                 if (currentRole == null ||
-                    (currentRole != BankRoles.Customer && currentRole != BankRoles.Admin) ||
-                    !string.Equals(currentRole, tokenRole, StringComparison.Ordinal))
+                    !string.Equals(currentRole.RoleName, tokenRole, StringComparison.Ordinal))
                     context.Fail("Account is inactive or its role has changed.");
 
                 return Task.CompletedTask;
@@ -119,14 +119,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(BankPolicies.CustomerOnly, policy =>
-        policy.RequireRole(BankRoles.Customer));
-    options.AddPolicy(BankPolicies.AdminOnly, policy =>
-        policy.RequireRole(BankRoles.Admin));
+    foreach (var permission in new[]
+    {
+        BankPermissions.ViewAccount,
+        BankPermissions.ViewBalance,
+        BankPermissions.ViewHistory,
+        BankPermissions.Deposit,
+        BankPermissions.Withdraw,
+        BankPermissions.Transfer
+    })
+    {
+        options.AddPolicy(permission, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AddRequirements(new PermissionRequirement(permission));
+        });
+    }
     options.AddPolicy(BankPolicies.AccountAccess, policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireRole(BankRoles.Customer, BankRoles.Admin);
         policy.AddRequirements(new AccountAccessRequirement());
     });
 });

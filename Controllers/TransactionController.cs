@@ -26,6 +26,7 @@ public class TransactionController : ControllerBase
 
     [HttpPost("{accountNumber}/Deposit")]
     [Authorize(Policy = BankPolicies.AccountAccess)]
+    [Authorize(Policy = BankPermissions.Deposit)]
     public IActionResult Deposit(string accountNumber, [FromBody] DepositRequest req)
     {
         try
@@ -34,6 +35,7 @@ public class TransactionController : ControllerBase
             return kq switch
             {
                 { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.PolicyDenied } => StatusCode(403, kq),
                 { Code: TransactionCodes.InvalidAmount } => BadRequest(kq),
                 { Code: TransactionCodes.Success } =>
                     Ok(new { kq.Code, kq.Message, soDu = _qlnh.GetBalance(accountNumber) }),
@@ -47,7 +49,7 @@ public class TransactionController : ControllerBase
         }
     }
     [HttpPost("Withdraw")]
-    [Authorize(Policy = BankPolicies.CustomerOnly)]
+    [Authorize(Policy = BankPermissions.Withdraw)]
     public IActionResult Withdraw([FromBody] WithdrawRequest req)
     {
         try
@@ -57,6 +59,7 @@ public class TransactionController : ControllerBase
             {
                 { Code: TransactionCodes.Success } => Ok(kq),
                 { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.PolicyDenied } => StatusCode(403, kq),
                 { Code: TransactionCodes.InvalidAmount or TransactionCodes.InsufficientBalance } => BadRequest(kq),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };
@@ -68,7 +71,7 @@ public class TransactionController : ControllerBase
         }
     }
     [HttpPost("TransferMoney")]
-    [Authorize(Policy = BankPolicies.CustomerOnly)]
+    [Authorize(Policy = BankPermissions.Transfer)]
     public IActionResult TransferMoney([FromBody] TransferRequest req)
     {
         try
@@ -78,6 +81,7 @@ public class TransactionController : ControllerBase
             {
                 { Code: TransactionCodes.Success } => Ok(kq),
                 { Code: TransactionCodes.AccountNotFound } => NotFound(kq),
+                { Code: TransactionCodes.PolicyDenied } => StatusCode(403, kq),
                 { Code: TransactionCodes.InvalidAmount or TransactionCodes.InsufficientBalance or TransactionCodes.CannotTransferToSelf } => BadRequest(kq),
                 _ => StatusCode(500, new { message = "Loi he thong" })
             };

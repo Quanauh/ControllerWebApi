@@ -108,11 +108,12 @@ public class BankService : IBankService
         if (!string.Equals(account.Status, "ACTIVE", StringComparison.Ordinal))
             return new(LoginResult.AccountInactive);
 
-        if (account.Role != BankRoles.Customer && account.Role != BankRoles.Admin)
+        var role = string.IsNullOrWhiteSpace(account.Role) ? null : _acd.GetRole(account.Role);
+        if (role == null || string.IsNullOrWhiteSpace(role.RoleName))
             return new(LoginResult.InvalidRole);
 
         _logger.LogInformation("Dang Nhap - Stk {AccountNumber} dang nhap thanh cong", AccountNumber);
-        return new(LoginResult.Success, account.Role);
+        return new(LoginResult.Success, role.RoleName);
     }
 
     // Nap tien
@@ -131,7 +132,11 @@ public class BankService : IBankService
             return new(TransactionCodes.InvalidAmount, "So tien khong hop le");
         }
 
-        _acd.Deposit(AccountNumber, a);
+        var depositResult = _acd.Deposit(AccountNumber, a);
+        if (depositResult == BalanceOperationResult.PolicyDenied)
+            return new(TransactionCodes.PolicyDenied, "Giao dich khong dap ung quy tac nap tien");
+        if (depositResult != BalanceOperationResult.Success)
+            throw new InvalidOperationException("Unexpected deposit result.");
         _logger.LogInformation("Nap Tien - So tai khoan {AccountNumber} nap tien thanh cong, so tien {Amount}", AccountNumber, a);
         return new(TransactionCodes.Success, "Nap tien thanh cong");
     }
@@ -152,11 +157,16 @@ public class BankService : IBankService
             return new(TransactionCodes.InvalidAmount, "So tien khong hop le");
         }
 
-        if (!_acd.TryWithdraw(AccountNumber, a))
+        var withdrawResult = _acd.TryWithdraw(AccountNumber, a);
+        if (withdrawResult == BalanceOperationResult.PolicyDenied)
+            return new(TransactionCodes.PolicyDenied, "Giao dich khong dap ung quy tac rut tien");
+        if (withdrawResult == BalanceOperationResult.InsufficientBalance)
         {
             _logger.LogWarning("Rut tien - So tai khoan {AccountNumber} khong du so du", AccountNumber);
             return new(TransactionCodes.InsufficientBalance, "So du khong du");
         }
+        if (withdrawResult != BalanceOperationResult.Success)
+            throw new InvalidOperationException("Unexpected withdrawal result.");
         _logger.LogInformation("Rut tien - So tai khoan {AccountNumber} rut tien thanh cong", AccountNumber);
         return new(TransactionCodes.Success, "Rut tien thanh cong");
     }
@@ -187,11 +197,19 @@ public class BankService : IBankService
             return new(TransactionCodes.AccountNotFound, "Khong tim thay tai khoan");
         }
 
-        if (!_acd.TryTransferMoney(AccountNumber1, AccountNumber2, a))
+        var transferResult = _acd.TryTransferMoney(AccountNumber1, AccountNumber2, a);
+        if (transferResult == TransferExecutionResult.PolicyDenied)
+        {
+            _logger.LogWarning("Chuyen tien - Giao dich {AccountNumber1} bi chan boi quy tac ABAC", AccountNumber1);
+            return new(TransactionCodes.PolicyDenied, "Giao dich khong dap ung quy tac chuyen tien");
+        }
+        if (transferResult == TransferExecutionResult.InsufficientBalance)
         {
             _logger.LogWarning("Chuyen tien - So tai khoan {AccountNumber1} khong du so du", AccountNumber1);
             return new(TransactionCodes.InsufficientBalance, "So du khong du");
         }
+        if (transferResult != TransferExecutionResult.Success)
+            throw new InvalidOperationException("Unexpected transfer result.");
 
         _logger.LogInformation("Chuyen tien - So tai khoan {AccountNumber1} chuyen tien thanh cong cho so tai khoan {AccountNumber2}, So tien {Amount}", AccountNumber1, AccountNumber2, a);
         return new(TransactionCodes.Success, "Chuyen tien thanh cong");

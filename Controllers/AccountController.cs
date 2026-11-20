@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using HuanBank.Api.Services;
 using HuanBank.Api.Model.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -18,13 +17,9 @@ public class AccountController : ControllerBase
         this._qlnh = _qlnh;
         _logger = logger;
     }
-    private string CurrentStk => User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-    [HttpGet("AccountInfo")]
-    [Authorize(Policy = BankPolicies.CustomerOnly)]
-    public IActionResult GetAccountInfo() => GetAccountInfoCore(CurrentStk);
-
     [HttpGet("{accountNumber}/AccountInfo")]
     [Authorize(Policy = BankPolicies.AccountAccess)]
+    [Authorize(Policy = BankPermissions.ViewAccount)]
     public IActionResult GetAccountInfoByNumber(string accountNumber) => GetAccountInfoCore(accountNumber);
 
     private IActionResult GetAccountInfoCore(string accountNumber)
@@ -54,12 +49,9 @@ public class AccountController : ControllerBase
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }
-    [HttpGet("Balance")]
-    [Authorize(Policy = BankPolicies.CustomerOnly)]
-    public IActionResult GetBalance() => GetBalanceCore(CurrentStk);
-
     [HttpGet("{accountNumber}/Balance")]
     [Authorize(Policy = BankPolicies.AccountAccess)]
+    [Authorize(Policy = BankPermissions.ViewBalance)]
     public IActionResult GetBalanceByNumber(string accountNumber) => GetBalanceCore(accountNumber);
 
     private IActionResult GetBalanceCore(string accountNumber)
@@ -82,12 +74,9 @@ public class AccountController : ControllerBase
             return StatusCode(500, new { message = "Loi he thong" });
         }
     }
-    [HttpGet("TransactionHistory")]
-    [Authorize(Policy = BankPolicies.CustomerOnly)]
-    public IActionResult GetTransactionHistory() => GetTransactionHistoryCore(CurrentStk);
-
     [HttpGet("{accountNumber}/TransactionHistory")]
     [Authorize(Policy = BankPolicies.AccountAccess)]
+    [Authorize(Policy = BankPermissions.ViewHistory)]
     public IActionResult GetTransactionHistoryByNumber(string accountNumber) => GetTransactionHistoryCore(accountNumber);
 
     private IActionResult GetTransactionHistoryCore(string accountNumber)

@@ -6,6 +6,7 @@ using Dapper;
 using Oracle.ManagedDataAccess.Client;
 using HuanBank.Api.DAO.Models;
 using HuanBank.Api.Exceptions;
+using HuanBank.Api.Authorization;
 namespace HuanBank.Api.DAO;
 using HuanBank.Api.Util;
 class AccountDAO : IAccountDAO
@@ -31,12 +32,83 @@ class AccountDAO : IAccountDAO
             new { accountNumber });
     }
 
-    public string? GetActiveRole(string accountNumber)
+    public RoleRecord? GetActiveRole(string accountNumber)
     {
         using OracleConnection conn = _database.GetConnection();
-        return conn.QuerySingleOrDefault<string>(
-            "SELECT ROLE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :accountNumber AND STATUS = 'ACTIVE'",
+        return conn.QuerySingleOrDefault<RoleRecord>(
+            @"SELECT r.ROLE_NAME AS RoleName, r.DESCRIPTION AS Description
+              FROM ACCOUNTS a
+              JOIN ROLES r ON r.ROLE_NAME = a.ROLE
+              WHERE a.ACCOUNT_NUMBER = :accountNumber AND a.STATUS = 'ACTIVE'",
             new { accountNumber });
+    }
+
+    public RoleRecord? GetRole(string roleName)
+    {
+        using OracleConnection conn = _database.GetConnection();
+        return conn.QuerySingleOrDefault<RoleRecord>(
+            @"SELECT ROLE_NAME AS RoleName, DESCRIPTION AS Description
+              FROM ROLES WHERE ROLE_NAME = :roleName", new { roleName });
+    }
+
+    public bool HasPermission(string role, string permissionCode)
+    {
+        using OracleConnection conn = _database.GetConnection();
+        return conn.ExecuteScalar<int>(
+            @"SELECT COUNT(*) FROM ROLE_PERMISSIONS
+              WHERE ROLE_NAME = :role AND PERMISSION_CODE = :permissionCode",
+            new { role, permissionCode }) > 0;
+    }
+
+    public IReadOnlyList<AbacRule> GetAbacRules(string role, string actionCode)
+    {
+        using OracleConnection conn = _database.GetConnection();
+        return LoadAbacRules(conn, null, role, actionCode);
+    }
+
+    private static IReadOnlyList<AbacRule> LoadAbacRules(
+        OracleConnection conn, OracleTransaction? transaction, string role, string actionCode) =>
+        conn.Query<AbacRule>(
+            @"SELECT RULE_CODE AS RuleCode, RULE_TYPE AS RuleType,
+                     NUMERIC_VALUE AS NumericValue, TEXT_VALUE AS TextValue,
+                     START_MINUTE AS StartMinute
+              FROM ABAC_RULES
+              WHERE ROLE_NAME = :role AND ACTION_CODE = :actionCode AND IS_ACTIVE = 'Y'
+              ORDER BY RULE_CODE",
+            new { role, actionCode }, transaction).AsList();
+
+    private sealed class AccountBalanceState
+    {
+        public string Role { get; set; } = "";
+        public string Status { get; set; } = "";
+        public decimal Balance { get; set; }
+    }
+
+    private sealed class TransferDailyUsage
+    {
+        public decimal TotalAmount { get; set; }
+        public int TransferCount { get; set; }
+    }
+
+    private static DateTime GetBusinessTime(OracleConnection conn, OracleTransaction transaction) =>
+        conn.ExecuteScalar<DateTime>(
+            "SELECT CAST(SYSTIMESTAMP AT TIME ZONE '+07:00' AS DATE) FROM DUAL",
+            transaction: transaction);
+
+    private static decimal GetDailyAmount(
+        OracleConnection conn, OracleTransaction transaction, string accountNumber,
+        string transactionType, DateTime businessTime)
+    {
+        var dayStart = businessTime.Date;
+        return conn.ExecuteScalar<decimal>(
+            @"SELECT NVL(SUM(AMOUNT), 0)
+              FROM TRANSACTIONS
+              WHERE ACCOUNT_NUMBER = :accountNumber
+                AND TRANSACTION_TYPE = :transactionType
+                AND TRANSACTION_DATE >= :dayStart
+                AND TRANSACTION_DATE < :nextDay",
+            new { accountNumber, transactionType, dayStart, nextDay = dayStart.AddDays(1) },
+            transaction);
     }
 
     private int GetNextId(OracleConnection conn, OracleTransaction tran, string tenSequence)
@@ -121,7 +193,7 @@ class AccountDAO : IAccountDAO
     }
 
     // Chuyen tien - chi 1 dong TRANSACTIONS, chi track so du ben khoi tao (stk1)
-    public bool TryTransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
+    public TransferExecutionResult TryTransferMoney(string AccountNumber1, string AccountNumber2, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
@@ -135,13 +207,39 @@ class AccountDAO : IAccountDAO
                   FOR UPDATE",
                 new { AccountNumber1, AccountNumber2 }, trann).AsList();
 
-            decimal senderBalance = conn.ExecuteScalar<decimal>(
-                "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber",
+            var sender = conn.QuerySingle<AccountBalanceState>(
+                "SELECT ROLE AS Role, STATUS AS Status, BALANCE AS Balance FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber",
                 new { AccountNumber = AccountNumber1 }, trann);
-            if (senderBalance < a)
+            if (sender.Balance < a)
             {
                 trann.Rollback();
-                return false;
+                return TransferExecutionResult.InsufficientBalance;
+            }
+
+            // The source row is locked above: two transfers from one account cannot
+            // both pass a daily limit using the same prior total.
+            var canTransfer = sender.Status == "ACTIVE" &&
+                conn.ExecuteScalar<int>(
+                    @"SELECT COUNT(*) FROM ROLE_PERMISSIONS
+                      WHERE ROLE_NAME = :role AND PERMISSION_CODE = :permissionCode",
+                    new { role = sender.Role, permissionCode = BankPermissions.Transfer }, trann) > 0;
+            var businessTime = GetBusinessTime(conn, trann);
+            var dayStart = businessTime.Date;
+            var usage = conn.QuerySingle<TransferDailyUsage>(
+                @"SELECT NVL(SUM(AMOUNT), 0) AS TotalAmount,
+                         COUNT(*) AS TransferCount
+                  FROM TRANSACTIONS
+                  WHERE ACCOUNT_NUMBER = :accountNumber
+                    AND TRANSACTION_TYPE = 'TRANSFER_OUT'
+                    AND TRANSACTION_DATE >= :dayStart
+                    AND TRANSACTION_DATE < :nextDay",
+                new { accountNumber = AccountNumber1, dayStart, nextDay = dayStart.AddDays(1) }, trann);
+            if (!canTransfer || !AbacEvaluator.CanTransfer(
+                    LoadAbacRules(conn, trann, sender.Role, AbacActions.Transfer),
+                    a, usage.TotalAmount, usage.TransferCount, businessTime))
+            {
+                trann.Rollback();
+                return TransferExecutionResult.PolicyDenied;
             }
 
             var (before1, after1) = UpdateBalance(conn, trann, AccountNumber1, -a);
@@ -150,17 +248,17 @@ class AccountDAO : IAccountDAO
             int transactionId = GetNextId(conn, trann, "seq_transactions");
 
             conn.Execute(
-                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER)
-              VALUES (:transactionId, :AccountNumber1, :AccountNumber2, 'TRANSFER_OUT', :a, :before1, :after1)",
-                new { transactionId, AccountNumber1, AccountNumber2, a, before1, after1 }, trann);
+                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER, TRANSACTION_DATE)
+              VALUES (:transactionId, :AccountNumber1, :AccountNumber2, 'TRANSFER_OUT', :a, :before1, :after1, :businessTime)",
+                new { transactionId, AccountNumber1, AccountNumber2, a, before1, after1, businessTime }, trann);
 
             conn.Execute(
-                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER)
-              VALUES (:transactionId, :AccountNumber2, :AccountNumber1, 'TRANSFER_IN', :a, :before2, :after2)",
-                new { transactionId, AccountNumber2, AccountNumber1, a, before2, after2 }, trann);
+                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER, TRANSACTION_DATE)
+              VALUES (:transactionId, :AccountNumber2, :AccountNumber1, 'TRANSFER_IN', :a, :before2, :after2, :businessTime)",
+                new { transactionId, AccountNumber2, AccountNumber1, a, before2, after2, businessTime }, trann);
 
             trann.Commit();
-            return true;
+            return TransferExecutionResult.Success;
         }
         catch
         {
@@ -170,21 +268,35 @@ class AccountDAO : IAccountDAO
     }
 
     // Nap tien
-    public void Deposit(string AccountNumber, decimal a)
+    public BalanceOperationResult Deposit(string AccountNumber, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
+            var account = conn.QuerySingle<AccountBalanceState>(
+                @"SELECT ROLE AS Role, STATUS AS Status, BALANCE AS Balance
+                  FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber FOR UPDATE",
+                new { AccountNumber }, trann);
+            var businessTime = GetBusinessTime(conn, trann);
+            var amountToday = GetDailyAmount(conn, trann, AccountNumber, "DEPOSIT", businessTime);
+            if (account.Status != "ACTIVE" || !AbacEvaluator.CanApplyAmountRules(
+                    LoadAbacRules(conn, trann, account.Role, AbacActions.Deposit), a, amountToday))
+            {
+                trann.Rollback();
+                return BalanceOperationResult.PolicyDenied;
+            }
+
             var (before, after) = UpdateBalance(conn, trann, AccountNumber, a);
 
             int transactionId = GetNextId(conn, trann, "seq_transactions");
             conn.Execute(
-                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER)
-                  VALUES (:transactionId, :AccountNumber, NULL, 'DEPOSIT', :a, :before, :after)",
-                new { transactionId, AccountNumber, a, before, after }, trann);
+                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER, TRANSACTION_DATE)
+                  VALUES (:transactionId, :AccountNumber, NULL, 'DEPOSIT', :a, :before, :after, :businessTime)",
+                new { transactionId, AccountNumber, a, before, after, businessTime }, trann);
 
             trann.Commit();
+            return BalanceOperationResult.Success;
         }
         catch
         {
@@ -194,31 +306,41 @@ class AccountDAO : IAccountDAO
     }
 
     // Rut tien
-    public bool TryWithdraw(string AccountNumber, decimal a)
+    public BalanceOperationResult TryWithdraw(string AccountNumber, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
         try
         {
-            decimal balance = conn.ExecuteScalar<decimal>(
-                "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber FOR UPDATE",
+            var account = conn.QuerySingle<AccountBalanceState>(
+                @"SELECT ROLE AS Role, STATUS AS Status, BALANCE AS Balance
+                  FROM ACCOUNTS WHERE ACCOUNT_NUMBER = :AccountNumber FOR UPDATE",
                 new { AccountNumber }, trann);
-            if (balance < a)
+            if (account.Balance < a)
             {
                 trann.Rollback();
-                return false;
+                return BalanceOperationResult.InsufficientBalance;
+            }
+
+            var businessTime = GetBusinessTime(conn, trann);
+            var amountToday = GetDailyAmount(conn, trann, AccountNumber, "WITHDRAW", businessTime);
+            if (account.Status != "ACTIVE" || !AbacEvaluator.CanApplyAmountRules(
+                    LoadAbacRules(conn, trann, account.Role, AbacActions.Withdraw), a, amountToday))
+            {
+                trann.Rollback();
+                return BalanceOperationResult.PolicyDenied;
             }
 
             var (before, after) = UpdateBalance(conn, trann, AccountNumber, -a);
 
             int transactionId = GetNextId(conn, trann, "seq_transactions");
             conn.Execute(
-                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER)
-                  VALUES (:transactionId, :AccountNumber, NULL, 'WITHDRAW', :a, :before, :after)",
-                new { transactionId, AccountNumber, a, before, after }, trann);
+                @"INSERT INTO TRANSACTIONS (TRANSACTION_ID, ACCOUNT_NUMBER, COUNTERPART_ACCOUNT_NUMBER, TRANSACTION_TYPE, AMOUNT, BALANCE_BEFORE, BALANCE_AFTER, TRANSACTION_DATE)
+                  VALUES (:transactionId, :AccountNumber, NULL, 'WITHDRAW', :a, :before, :after, :businessTime)",
+                new { transactionId, AccountNumber, a, before, after, businessTime }, trann);
 
             trann.Commit();
-            return true;
+            return BalanceOperationResult.Success;
         }
         catch
         {

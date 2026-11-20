@@ -2,6 +2,7 @@ using Dapper;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using HuanBank.Api.DAO.Models;
+using HuanBank.Api.Authorization;
 using HuanBank.Api.Util;
 namespace HuanBank.Api.DAO;
 
@@ -15,7 +16,12 @@ class FakeAccountDAO : IAccountDAO
     public bool Exists(string stk) => stk == "TEST123";
     public LoginAccountRecord? GetLoginAccount(string accountNumber) =>
         accountNumber == "TEST123" ? new() { Password = "1234", Role = "Customer", Status = "ACTIVE" } : null;
-    public string? GetActiveRole(string accountNumber) => accountNumber == "TEST123" ? "Customer" : null;
+    public RoleRecord? GetActiveRole(string accountNumber) =>
+        accountNumber == "TEST123" ? new() { RoleName = "Customer" } : null;
+    public RoleRecord? GetRole(string roleName) =>
+        roleName == "Customer" ? new() { RoleName = "Customer" } : null;
+    public bool HasPermission(string role, string permissionCode) => role == "Customer";
+    public IReadOnlyList<AbacRule> GetAbacRules(string role, string actionCode) => [];
     private int GetNextId(OracleConnection conn, OracleTransaction tran, string tenSequence)
     {
         return conn.ExecuteScalar<int>($"SELECT {tenSequence}.NEXTVAL FROM dual", transaction: tran);
@@ -83,7 +89,7 @@ class FakeAccountDAO : IAccountDAO
     }
 
     //chuyen tien - 1 dong GIAO_DICH + 2 dong SO_DU_SAU_GD (ben gui, ben nhan), cung 1 transaction
-    public bool TryTransferMoney(string stk1, string stk2, decimal a)
+    public TransferExecutionResult TryTransferMoney(string stk1, string stk2, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
@@ -95,7 +101,7 @@ class FakeAccountDAO : IAccountDAO
             if (balance < a)
             {
                 trann.Rollback();
-                return false;
+                return TransferExecutionResult.InsufficientBalance;
             }
 
             decimal soDuStk1 = UpdateBalance(conn, trann, stk1, -a);
@@ -110,7 +116,7 @@ class FakeAccountDAO : IAccountDAO
             BalanceAfterTranaction(conn, trann, maGd, stk2, soDuStk2);
 
             trann.Commit();
-            return true;
+            return TransferExecutionResult.Success;
         }
         catch
         {
@@ -131,7 +137,7 @@ class FakeAccountDAO : IAccountDAO
     }
 
     //Nạp tiền - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
-    public void Deposit(string stk, decimal a)
+    public BalanceOperationResult Deposit(string stk, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
@@ -146,6 +152,7 @@ class FakeAccountDAO : IAccountDAO
 
             BalanceAfterTranaction(conn, trann, maGd, stk, soDuMoi);
             trann.Commit();
+            return BalanceOperationResult.Success;
         }
         catch
         {
@@ -169,7 +176,7 @@ class FakeAccountDAO : IAccountDAO
 
     }
     //Rut tien - 1 dong GIAO_DICH + 1 dong SO_DU_SAU_GD, cung 1 transaction
-    public bool TryWithdraw(string stk, decimal a)
+    public BalanceOperationResult TryWithdraw(string stk, decimal a)
     {
         using OracleConnection conn = _database.GetConnection();
         using OracleTransaction trann = conn.BeginTransaction();
@@ -181,7 +188,7 @@ class FakeAccountDAO : IAccountDAO
             if (balance < a)
             {
                 trann.Rollback();
-                return false;
+                return BalanceOperationResult.InsufficientBalance;
             }
 
             decimal soDuMoi = UpdateBalance(conn, trann, stk, -a);
@@ -193,7 +200,7 @@ class FakeAccountDAO : IAccountDAO
 
             BalanceAfterTranaction(conn, trann, maGd, stk, soDuMoi);
             trann.Commit();
-            return true;
+            return BalanceOperationResult.Success;
         }
         catch
         {

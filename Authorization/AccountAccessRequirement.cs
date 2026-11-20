@@ -1,15 +1,15 @@
 using System.Security.Claims;
+using HuanBank.Api.DAO;
 using Microsoft.AspNetCore.Authorization;
 
 namespace HuanBank.Api.Authorization;
 
 /// <summary>
-/// ABAC rule: a customer may access only their own account; an admin may access any account.
-/// The account resource must be supplied by the route.
+/// Applies the account scope rules configured for the current role in Oracle.
 /// </summary>
 public sealed class AccountAccessRequirement : IAuthorizationRequirement { }
 
-public sealed class AccountAccessHandler(IHttpContextAccessor httpContextAccessor)
+public sealed class AccountAccessHandler(IHttpContextAccessor httpContextAccessor, IAccountDAO accountDao)
     : AuthorizationHandler<AccountAccessRequirement>
 {
     protected override Task HandleRequirementAsync(
@@ -20,16 +20,13 @@ public sealed class AccountAccessHandler(IHttpContextAccessor httpContextAccesso
         if (string.IsNullOrWhiteSpace(routeAccount))
             return Task.CompletedTask;
 
-        if (context.User.IsInRole(BankRoles.Admin))
-        {
-            context.Succeed(requirement);
-            return Task.CompletedTask;
-        }
-
+        var role = context.User.FindFirstValue(ClaimTypes.Role);
         var subjectAccount = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!string.IsNullOrWhiteSpace(subjectAccount) &&
-            !string.IsNullOrWhiteSpace(routeAccount) &&
-            string.Equals(subjectAccount, routeAccount, StringComparison.Ordinal))
+        if (!string.IsNullOrWhiteSpace(role) &&
+            !string.IsNullOrWhiteSpace(subjectAccount) &&
+            AbacEvaluator.CanAccessAccount(
+                accountDao.GetAbacRules(role, AbacActions.AccountAccess),
+                subjectAccount, routeAccount))
         {
             context.Succeed(requirement);
         }

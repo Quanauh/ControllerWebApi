@@ -15,8 +15,8 @@ public class TokenService
 
     public string GenerateToken(string stk, string role)
     {
-        if (role != BankRoles.Admin && role != BankRoles.Customer)
-            throw new ArgumentException("Unsupported role", nameof(role));
+        if (string.IsNullOrWhiteSpace(role))
+            throw new ArgumentException("Role is required", nameof(role));
 
         var claims = new[]
         {

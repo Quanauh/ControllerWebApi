@@ -16,3 +16,11 @@ vd private readonly IAccountDAO _acd
 
 
 chia lai code theo nghiep vu (enum, validate,bank)
+
+- phần định nghĩa mỗi role được làm gì để xuống database  x
+
+- ABAC tạo 1 bảng dưới database  x 
+
+- khi thêm 1 role cần thiết kế lại cho thuận tiện  
+
+- thêm ABAC, ví dụ không được chuyển tiền quá 10tr sau 5h chiều x 

@@ -9,4 +9,5 @@ public static class TransactionCodes
     public const long InvalidAmount = -2;
     public const long InsufficientBalance = -3;
     public const long CannotTransferToSelf = -4;
+    public const long PolicyDenied = -5;
 }
